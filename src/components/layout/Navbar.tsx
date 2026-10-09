@@ -13,7 +13,8 @@ import {
   Mail,
   MapPin,
   ArrowRight,
-  Sparkles
+  Sparkles,
+  Lock
 } from 'lucide-react';
 
 export const Navbar = () => {
@@ -38,30 +39,40 @@ export const Navbar = () => {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md shadow-sm border-b border-slate-100 transition-all">
-      {/* Top Banner Bar */}
+    <header className="sticky top-0 z-50 glass-nav transition-all duration-300">
+      {/* Top Notice / Contact Bar */}
       {settings.showAnnouncementTicker !== false && (
-        <div className="bg-school-navy-950 text-slate-200 text-xs py-2 px-4 border-b border-school-navy-900 transition-all">
+        <div className="bg-gradient-to-r from-school-navy-950 via-school-navy-900 to-school-navy-950 text-slate-200 text-xs py-2 px-4 border-b border-school-navy-800/80 transition-all">
           <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-            <div className="flex items-center space-x-4 overflow-hidden text-ellipsis whitespace-nowrap">
-              <span className="inline-flex items-center text-amber-400 font-semibold uppercase tracking-wider text-[10px] bg-amber-400/10 px-2 py-0.5 rounded-full border border-amber-400/20">
-                <Sparkles className="w-3 h-3 mr-1" />
+            <div className="flex items-center space-x-3 overflow-hidden text-ellipsis whitespace-nowrap">
+              <span className="inline-flex items-center text-amber-300 font-extrabold uppercase tracking-wider text-[10px] bg-amber-400/15 px-2.5 py-0.5 rounded-full border border-amber-400/30 shadow-xs">
+                <Sparkles className="w-3 h-3 mr-1 text-amber-300 animate-pulse" />
                 Notice
               </span>
-              <span className="truncate text-slate-300">
+              <span className="truncate text-slate-300 font-medium text-[11px] sm:text-xs">
                 {settings.announcementTicker}
               </span>
             </div>
 
-            <div className="flex items-center space-x-6 text-slate-300">
-              <a href={`tel:${settings.primaryPhone}`} className="hover:text-amber-400 flex items-center transition-colors">
-                <Phone className="w-3 h-3 mr-1 text-amber-400" />
+            <div className="flex items-center space-x-5 text-slate-300 text-xs">
+              <a 
+                href={`tel:${settings.primaryPhone}`} 
+                className="hover:text-amber-300 flex items-center transition-colors font-medium group"
+              >
+                <Phone className="w-3.5 h-3.5 mr-1.5 text-amber-400 group-hover:scale-110 transition-transform" />
                 <span>{settings.primaryPhone}</span>
               </a>
               <span className="hidden md:inline-flex items-center text-slate-400">
-                <MapPin className="w-3 h-3 mr-1 text-amber-400" />
-                {settings.city || settings.locationCity || 'Ghana'}, {settings.country || 'Ghana'}
+                <MapPin className="w-3.5 h-3.5 mr-1.5 text-amber-400" />
+                {settings.city || settings.locationCity || 'Takoradi'}, Ghana
               </span>
+              <Link 
+                href="/admin-portal" 
+                className="hidden sm:inline-flex items-center text-amber-400/90 hover:text-amber-300 transition-colors text-[11px] font-semibold bg-white/5 px-2 py-0.5 rounded border border-white/10"
+              >
+                <Lock className="w-2.5 h-2.5 mr-1" />
+                Portal
+              </Link>
             </div>
           </div>
         </div>
@@ -71,30 +82,32 @@ export const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Logo & School Name */}
-          <Link href="/" className="flex items-center space-x-3 group">
-            <SchoolLogo size="md" className="group-hover:scale-105" />
+          <Link href="/" className="flex items-center space-x-3.5 group">
+            <SchoolLogo size="md" className="group-hover:scale-105 transition-transform duration-300 shadow-md" />
             <div>
-              <span className="block font-bold text-lg sm:text-xl text-school-navy-950 tracking-tight leading-tight group-hover:text-school-navy-700 transition-colors">
+              <span className="block font-heading font-extrabold text-lg sm:text-xl text-school-navy-950 tracking-tight leading-tight group-hover:text-school-navy-700 transition-colors">
                 {settings.schoolName}
               </span>
-              <div className="flex items-center space-x-2 text-xs text-slate-500 font-medium">
-                <span className="text-amber-700 font-semibold">{settings.location}</span>
-                <span>•</span>
+              <div className="flex items-center space-x-2 text-xs text-slate-500 font-medium mt-0.5">
+                <span className="text-amber-700 font-bold bg-amber-50 px-2 py-0.5 rounded border border-amber-200/60 text-[10px] tracking-wide">
+                  {settings.location}
+                </span>
+                <span className="text-slate-300">•</span>
                 <span className="italic text-slate-400 hidden sm:inline">&ldquo;{settings.schoolMotto}&rdquo;</span>
               </div>
             </div>
           </Link>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden lg:flex items-center space-x-1">
+          <nav className="hidden lg:flex items-center space-x-1 bg-slate-100/70 p-1.5 rounded-2xl border border-slate-200/60 backdrop-blur-sm">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className={`px-3.5 py-2 rounded-lg text-sm font-medium transition-all ${
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 ${
                   isActive(link.href)
-                    ? 'text-school-navy-900 bg-school-navy-50 font-semibold'
-                    : 'text-slate-600 hover:text-school-navy-900 hover:bg-slate-100/70'
+                    ? 'text-school-navy-950 bg-white shadow-xs font-black border border-slate-200/80'
+                    : 'text-slate-600 hover:text-school-navy-900 hover:bg-white/50'
                 }`}
               >
                 {link.label}
@@ -106,10 +119,10 @@ export const Navbar = () => {
           <div className="hidden sm:flex items-center space-x-3">
             <Link
               href="/admissions"
-              className="inline-flex items-center px-5 py-2.5 text-sm font-semibold rounded-lg bg-amber-500 hover:bg-amber-600 text-slate-950 shadow-sm shadow-amber-500/20 hover:shadow transition-all"
+              className="btn-gold-glow inline-flex items-center px-5 py-2.5 text-xs font-black rounded-xl shadow-md transition-all duration-200 group"
             >
-              Apply Online
-              <ArrowRight className="w-4 h-4 ml-1.5" />
+              <span>Apply Online</span>
+              <ArrowRight className="w-3.5 h-3.5 ml-1.5 group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
 
@@ -117,10 +130,10 @@ export const Navbar = () => {
           <div className="flex lg:hidden items-center space-x-2">
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-lg text-slate-700 hover:bg-slate-100 focus:outline-none"
+              className="p-2.5 rounded-xl text-slate-700 hover:bg-slate-100 border border-slate-200 focus:outline-none transition-colors"
               aria-label="Toggle navigation"
             >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
           </div>
         </div>
@@ -128,16 +141,16 @@ export const Navbar = () => {
 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="lg:hidden bg-white border-b border-slate-200 px-4 pt-2 pb-6 space-y-3 animate-in slide-in-from-top duration-200">
+        <div className="lg:hidden bg-white/95 backdrop-blur-xl border-b border-slate-200 px-5 pt-3 pb-6 space-y-3 shadow-xl animate-in slide-in-from-top-4 duration-200">
           <div className="grid gap-1">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 onClick={() => setMobileMenuOpen(false)}
-                className={`px-3 py-2.5 rounded-lg text-base font-medium ${
+                className={`px-4 py-3 rounded-xl text-sm font-bold transition-colors ${
                   isActive(link.href)
-                    ? 'bg-school-navy-50 text-school-navy-900 font-semibold'
+                    ? 'bg-school-navy-50 text-school-navy-950 border border-school-navy-100 font-extrabold'
                     : 'text-slate-700 hover:bg-slate-50'
                 }`}
               >
@@ -146,13 +159,20 @@ export const Navbar = () => {
             ))}
           </div>
 
-          <div className="pt-3 border-t border-slate-100">
+          <div className="pt-3 border-t border-slate-100 space-y-2">
             <Link
               href="/admissions"
               onClick={() => setMobileMenuOpen(false)}
-              className="w-full text-center py-2.5 px-4 rounded-lg bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold text-sm shadow-sm block"
+              className="w-full text-center py-3 px-4 rounded-xl btn-gold-glow font-black text-xs shadow-md block"
             >
               Apply for Admission
+            </Link>
+            <Link
+              href="/admin-portal"
+              onClick={() => setMobileMenuOpen(false)}
+              className="w-full text-center py-2.5 px-4 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs hover:bg-slate-200 block"
+            >
+              Staff & Admin Portal
             </Link>
           </div>
         </div>

@@ -70,16 +70,16 @@ export const AdminHeader = () => {
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-white border-b border-slate-200 shadow-xs h-16 flex items-center justify-between px-4 sm:px-6">
+    <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200/80 shadow-xs h-16 flex items-center justify-between px-4 sm:px-6">
       {/* Left: Indicator */}
       <div className="flex items-center space-x-3">
-        <div className="flex items-center space-x-2 text-xs">
-          <span className="font-black text-school-navy-950 tracking-tight text-sm flex items-center">
-            <SchoolLogo size="sm" className="w-5 h-5 mr-2 rounded" />
-            <span className="hidden sm:inline">{settings.schoolName} —</span> Admin Portal
+        <div className="flex items-center space-x-2.5 text-xs">
+          <span className="font-heading font-extrabold text-school-navy-950 tracking-tight text-sm flex items-center">
+            <SchoolLogo size="sm" className="w-6 h-6 mr-2 rounded-lg shadow-xs" />
+            <span className="hidden sm:inline">{settings.schoolName} —</span> Admin Console
           </span>
           <span className="text-slate-300 hidden sm:inline">|</span>
-          <span className="bg-amber-100 text-amber-950 font-extrabold px-2.5 py-0.5 rounded-full text-[11px]">
+          <span className="bg-amber-400/15 border border-amber-400/30 text-amber-900 font-extrabold px-3 py-0.5 rounded-full text-[11px] shadow-xs">
             {settings.currentTerm} • {settings.academicYear}
           </span>
         </div>
@@ -95,7 +95,7 @@ export const AdminHeader = () => {
             setPasswordSuccess(false);
           }}
           title="Change Master Admin Password"
-          className="inline-flex items-center text-xs font-bold text-amber-900 bg-amber-50 hover:bg-amber-100 border border-amber-200 px-3 py-1.5 rounded-lg transition-colors"
+          className="inline-flex items-center text-xs font-bold text-amber-950 bg-amber-50 hover:bg-amber-100/80 border border-amber-300/80 px-3 py-1.5 rounded-xl transition-all shadow-xs"
         >
           <KeyRound className="w-3.5 h-3.5 text-amber-600 sm:mr-1.5" />
           <span className="hidden sm:inline">Change Password</span>
@@ -105,7 +105,7 @@ export const AdminHeader = () => {
         <button
           onClick={resetToDemo}
           title="Reset to clean baseline data"
-          className="hidden xl:inline-flex items-center text-[11px] font-semibold text-slate-500 hover:text-rose-600 bg-slate-100 hover:bg-rose-50 px-2.5 py-1.5 rounded-lg border border-slate-200 transition-colors"
+          className="hidden xl:inline-flex items-center text-[11px] font-semibold text-slate-500 hover:text-rose-600 bg-slate-100/80 hover:bg-rose-50 px-2.5 py-1.5 rounded-xl border border-slate-200 transition-colors"
         >
           <RotateCcw className="w-3 h-3 mr-1" />
           Reset Baseline
@@ -115,11 +115,11 @@ export const AdminHeader = () => {
         <Link
           href="/admin-portal/audit"
           title="View Security & Audit Logs"
-          className="relative p-2 text-slate-600 hover:text-school-navy-900 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
+          className="relative p-2 text-slate-600 hover:text-school-navy-900 bg-slate-100 hover:bg-slate-200/80 rounded-xl transition-colors border border-slate-200/60"
         >
           <History className="w-4 h-4" />
           {auditLogs.length > 0 && (
-            <span className="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 text-slate-950 font-bold text-[9px] rounded-full flex items-center justify-center">
+            <span className="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 text-slate-950 font-black text-[9px] rounded-full flex items-center justify-center shadow-xs">
               {auditLogs.length > 9 ? '9+' : auditLogs.length}
             </span>
           )}
@@ -129,7 +129,7 @@ export const AdminHeader = () => {
         <Link
           href="/admin-portal/settings"
           title="System Settings"
-          className="p-2 text-slate-600 hover:text-school-navy-900 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors hidden sm:block"
+          className="p-2 text-slate-600 hover:text-school-navy-900 bg-slate-100 hover:bg-slate-200/80 rounded-xl transition-colors hidden sm:block border border-slate-200/60"
         >
           <Settings className="w-4 h-4" />
         </Link>
@@ -137,9 +137,9 @@ export const AdminHeader = () => {
         {/* Public Site */}
         <Link
           href="/"
-          className="text-xs text-slate-600 hover:text-school-navy-900 flex items-center bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg font-medium transition-colors"
+          className="text-xs text-slate-700 hover:text-school-navy-900 flex items-center bg-slate-100/90 hover:bg-slate-200 px-3 py-1.5 rounded-xl font-bold transition-colors border border-slate-200/60"
         >
-          <Home className="w-3.5 h-3.5 mr-1" />
+          <Home className="w-3.5 h-3.5 mr-1 text-slate-500" />
           <span className="hidden md:inline">Public Site</span>
         </Link>
 
@@ -147,7 +147,7 @@ export const AdminHeader = () => {
         <div className="relative">
           <button
             onClick={() => setAdminRoleOpen(!adminRoleOpen)}
-            className="flex items-center space-x-1.5 bg-gradient-to-r from-school-navy-950 to-school-navy-900 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-xs hover:from-school-navy-900 hover:to-school-navy-800 transition-all border border-amber-400/30"
+            className="flex items-center space-x-1.5 bg-gradient-to-r from-school-navy-950 to-school-navy-900 text-white px-3.5 py-1.5 rounded-xl text-xs font-black shadow-md hover:from-school-navy-900 hover:to-school-navy-800 transition-all border border-amber-400/40"
           >
             <Shield className="w-3.5 h-3.5 text-amber-400" />
             <span className="hidden sm:inline">Role:</span>

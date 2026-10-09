@@ -121,25 +121,24 @@ export default function HomePage() {
 
       <main className="flex-1">
         {/* HERO SECTION */}
-        <section className="relative overflow-hidden bg-gradient-to-b from-school-navy-950 via-school-navy-900 to-school-navy-950 text-white py-20 lg:py-28">
-          {/* Subtle Grid and Glow Overlays */}
-          <div className="absolute inset-0 bg-[radial-gradient(#ffffff0a_1px,transparent_1px)] [background-size:24px_24px] opacity-40"></div>
+        <section className="relative overflow-hidden bg-gradient-to-b from-school-navy-950 via-[#0a1e45] to-school-navy-950 text-white py-20 lg:py-28 bg-grid-subtle">
+          {/* Subtle Glow Overlays */}
           <div className="absolute top-1/4 -left-32 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
-          <div className="absolute bottom-10 right-0 w-96 h-96 bg-school-navy-400/10 rounded-full blur-3xl pointer-events-none"></div>
+          <div className="absolute bottom-10 right-0 w-96 h-96 bg-school-navy-400/15 rounded-full blur-3xl pointer-events-none"></div>
 
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
               
               {/* Left Content */}
-              <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
+              <div className="lg:col-span-7 space-y-7 text-center lg:text-left">
                 {settings.showAdmissionsBanner !== false && (
-                  <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-amber-300 text-xs sm:text-sm font-medium">
-                    <Sparkles className="w-4 h-4 text-amber-400" />
+                  <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-amber-300 text-xs sm:text-sm font-semibold shadow-xs">
+                    <Sparkles className="w-4 h-4 text-amber-400 animate-pulse" />
                     <span>Admissions Open for {settings.academicYear} Academic Year</span>
                   </div>
                 )}
 
-                <h1 className="text-3xl sm:text-4xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight font-serif">
+                <h1 className="text-3xl sm:text-4xl lg:text-6xl font-heading font-extrabold tracking-tight text-white leading-[1.12]">
                   {settings.heroTitle}
                 </h1>
 
@@ -151,23 +150,23 @@ export default function HomePage() {
                 <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
                   <Link
                     href="/admissions"
-                    className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-slate-950 font-bold text-base shadow-lg shadow-amber-500/25 hover:shadow-xl transition-all flex items-center justify-center space-x-2"
+                    className="w-full sm:w-auto px-8 py-3.5 rounded-xl btn-gold-glow font-black text-sm shadow-xl flex items-center justify-center space-x-2 group"
                   >
                     <span>Apply for Admission</span>
-                    <ArrowRight className="w-5 h-5" />
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </Link>
 
                   <Link
                     href="/about"
-                    className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 text-white font-semibold text-base transition-all flex items-center justify-center space-x-2 backdrop-blur-sm"
+                    className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-sm transition-all flex items-center justify-center space-x-2 backdrop-blur-md hover-lift"
                   >
-                    <BookOpen className="w-5 h-5 text-amber-400" />
-                    <span>Explore Academic Programs</span>
+                    <BookOpen className="w-4 h-4 text-amber-400" />
+                    <span>Academic Programs</span>
                   </Link>
 
                   <Link
                     href="/about"
-                    className="w-full sm:w-auto px-6 py-3.5 text-slate-300 hover:text-white font-medium text-sm text-center flex items-center justify-center"
+                    className="w-full sm:w-auto px-5 py-3.5 text-slate-300 hover:text-white font-bold text-xs uppercase tracking-wider text-center flex items-center justify-center transition-colors"
                   >
                     Learn More →
                   </Link>
@@ -175,22 +174,22 @@ export default function HomePage() {
 
                 {/* Key Metrics Chips */}
                 {settings.showStatsCounter !== false && (
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-8 border-t border-white/10">
-                    <div className="bg-white/5 backdrop-blur-sm p-3.5 rounded-xl border border-white/10 text-center lg:text-left">
-                      <p className="text-2xl sm:text-3xl font-extrabold text-amber-400">{settings.beceDistinctionRate}</p>
-                      <p className="text-xs text-slate-400 font-medium">BECE Distinction</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5 pt-8 border-t border-white/10">
+                    <div className="glass-panel-dark p-4 rounded-2xl border border-white/10 text-center lg:text-left hover-lift">
+                      <p className="text-2xl sm:text-3xl font-heading font-black text-amber-400">{settings.beceDistinctionRate}</p>
+                      <p className="text-[11px] text-slate-300 font-bold uppercase tracking-wide mt-0.5">BECE Distinction</p>
                     </div>
-                    <div className="bg-white/5 backdrop-blur-sm p-3.5 rounded-xl border border-white/10 text-center lg:text-left">
-                      <p className="text-2xl sm:text-3xl font-extrabold text-white">{settings.studentCountDisplay}</p>
-                      <p className="text-xs text-slate-400 font-medium">Happy Students</p>
+                    <div className="glass-panel-dark p-4 rounded-2xl border border-white/10 text-center lg:text-left hover-lift">
+                      <p className="text-2xl sm:text-3xl font-heading font-black text-white">{settings.studentCountDisplay}</p>
+                      <p className="text-[11px] text-slate-300 font-bold uppercase tracking-wide mt-0.5">Students</p>
                     </div>
-                    <div className="bg-white/5 backdrop-blur-sm p-3.5 rounded-xl border border-white/10 text-center lg:text-left">
-                      <p className="text-2xl sm:text-3xl font-extrabold text-white">{settings.teacherCountDisplay}</p>
-                      <p className="text-xs text-slate-400 font-medium">Certified Faculty</p>
+                    <div className="glass-panel-dark p-4 rounded-2xl border border-white/10 text-center lg:text-left hover-lift">
+                      <p className="text-2xl sm:text-3xl font-heading font-black text-white">{settings.teacherCountDisplay}</p>
+                      <p className="text-[11px] text-slate-300 font-bold uppercase tracking-wide mt-0.5">Certified Faculty</p>
                     </div>
-                    <div className="bg-white/5 backdrop-blur-sm p-3.5 rounded-xl border border-white/10 text-center lg:text-left">
-                      <p className="text-2xl sm:text-3xl font-extrabold text-amber-400">{settings.yearsOfExcellence}+</p>
-                      <p className="text-xs text-slate-400 font-medium">Years in {settings.locationCity || 'Anaji'}</p>
+                    <div className="glass-panel-dark p-4 rounded-2xl border border-white/10 text-center lg:text-left hover-lift">
+                      <p className="text-2xl sm:text-3xl font-heading font-black text-amber-400">{settings.yearsOfExcellence}+</p>
+                      <p className="text-[11px] text-slate-300 font-bold uppercase tracking-wide mt-0.5">Years of Service</p>
                     </div>
                   </div>
                 )}
@@ -200,9 +199,9 @@ export default function HomePage() {
               <div className="lg:col-span-5 relative">
                 <div className="relative mx-auto max-w-md lg:max-w-none">
                   {/* Decorative Frame */}
-                  <div className="absolute -inset-2 rounded-3xl bg-gradient-to-tr from-amber-500 to-school-navy-500 opacity-30 blur-lg"></div>
+                  <div className="absolute -inset-2 rounded-3xl bg-gradient-to-tr from-amber-500/40 to-school-navy-500/30 opacity-40 blur-xl"></div>
 
-                  <div className="relative rounded-2xl bg-slate-900 border border-white/15 overflow-hidden shadow-2xl">
+                  <div className="relative rounded-3xl bg-slate-900 border border-white/20 overflow-hidden shadow-2xl hover-lift">
                     <div className="relative h-64 sm:h-72 bg-gradient-to-t from-slate-950 via-slate-900 to-school-navy-900 overflow-hidden">
                       <img
                         src="https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=800&q=80"
@@ -211,49 +210,49 @@ export default function HomePage() {
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
                       <div className="absolute bottom-4 left-4 right-4">
-                        <span className="px-2.5 py-1 rounded bg-amber-500 text-slate-950 text-xs font-bold tracking-wide uppercase">
+                        <span className="px-2.5 py-1 rounded-md bg-amber-500 text-slate-950 text-[10px] font-black tracking-wider uppercase shadow-xs">
                           Excellence in Anaji-Mpatado
                         </span>
-                        <h3 className="text-white font-bold text-lg mt-1">
+                        <h3 className="text-white font-heading font-bold text-lg mt-1.5">
                           Nurturing Every Potential
                         </h3>
                       </div>
                     </div>
 
-                    <div className="p-6 space-y-4">
+                    <div className="p-6 space-y-4 bg-slate-900/90 backdrop-blur-md">
                       <div className="flex items-center justify-between text-xs text-slate-400 border-b border-slate-800 pb-3">
                         <span className="flex items-center">
                           <MapPin className="w-3.5 h-3.5 mr-1 text-amber-400" />
                           Western Region, Ghana
                         </span>
-                        <span className="flex items-center text-emerald-400 font-medium">
+                        <span className="flex items-center text-emerald-400 font-bold">
                           <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
                           GES / NaCCA Accredited
                         </span>
                       </div>
 
                       <div className="space-y-2.5">
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-slate-300">Curriculum</span>
-                          <span className="text-white font-semibold">Ghana NaCCA + Modern STEM</span>
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-slate-400">Curriculum</span>
+                          <span className="text-white font-bold">Ghana NaCCA + Modern STEM</span>
                         </div>
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-slate-300">Levels Offered</span>
-                          <span className="text-white font-semibold">Creche to JHS 3</span>
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-slate-400">Levels Offered</span>
+                          <span className="text-white font-bold">Creche to JHS 3</span>
                         </div>
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-slate-300">Assessment System</span>
-                          <span className="text-white font-semibold">Integrated SBA + Online Portals</span>
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-slate-400">Assessment System</span>
+                          <span className="text-white font-bold">Integrated SBA + Online Portals</span>
                         </div>
                       </div>
 
                       <div className="pt-2">
                         <Link
                           href="/admissions"
-                          className="w-full py-2.5 px-4 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 font-semibold text-sm flex items-center justify-center space-x-2 transition-colors"
+                          className="w-full py-2.5 px-4 rounded-xl bg-amber-400/20 hover:bg-amber-400/30 border border-amber-400/40 text-amber-300 font-bold text-xs flex items-center justify-center space-x-2 transition-all shadow-xs"
                         >
                           <span>Start Online Application</span>
-                          <ArrowRight className="w-4 h-4" />
+                          <ArrowRight className="w-3.5 h-3.5" />
                         </Link>
                       </div>
                     </div>
@@ -358,21 +357,21 @@ export default function HomePage() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
               {highlights.map((item, idx) => {
                 const IconComponent = item.icon;
                 return (
                   <div
                     key={idx}
-                    className="p-8 rounded-2xl bg-white border border-slate-200/80 hover:border-amber-400/80 hover:shadow-xl hover:-translate-y-1 transition-all group"
+                    className="p-8 rounded-3xl bg-white border border-slate-200/90 hover:border-amber-400/80 shadow-luxury hover-lift transition-all group"
                   >
-                    <div className="w-14 h-14 rounded-2xl bg-school-navy-50 group-hover:bg-amber-500 text-school-navy-900 group-hover:text-slate-950 flex items-center justify-center mb-6 transition-colors shadow-sm">
+                    <div className="w-14 h-14 rounded-2xl bg-school-navy-50 group-hover:bg-amber-400 text-school-navy-900 group-hover:text-slate-950 flex items-center justify-center mb-6 transition-all duration-300 shadow-xs group-hover:scale-110">
                       <IconComponent className="w-7 h-7" />
                     </div>
-                    <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-school-navy-900 transition-colors">
+                    <h3 className="text-xl font-heading font-extrabold text-slate-900 mb-2.5 group-hover:text-school-navy-900 transition-colors">
                       {item.title}
                     </h3>
-                    <p className="text-slate-600 text-sm leading-relaxed">
+                    <p className="text-slate-600 text-xs sm:text-sm leading-relaxed">
                       {item.desc}
                     </p>
                   </div>
@@ -383,16 +382,16 @@ export default function HomePage() {
         </section>
 
         {/* ACADEMIC PROGRAMS SHOWCASE */}
-        <section className="py-20 bg-slate-900 text-white relative overflow-hidden">
+        <section className="py-24 bg-gradient-to-b from-slate-950 via-[#071736] to-slate-950 text-white relative overflow-hidden bg-grid-subtle">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
-              <span className="px-3.5 py-1 rounded-full bg-white/10 text-amber-400 text-xs font-semibold uppercase tracking-wider">
+              <span className="px-4 py-1.5 rounded-full bg-white/10 text-amber-300 text-xs font-bold uppercase tracking-wider border border-white/10 shadow-xs">
                 Academic Curriculum
               </span>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-heading font-extrabold text-white tracking-tight">
                 Comprehensive Academic Pathways
               </h2>
-              <p className="text-slate-300 text-base">
+              <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
                 From early childhood foundations to Junior High School WAEC preparation, our structured curriculum equips students for every milestone.
               </p>
             </div>
@@ -401,28 +400,28 @@ export default function HomePage() {
               {programs.map((prog) => (
                 <div
                   key={prog.id}
-                  className="rounded-2xl bg-slate-800/80 border border-slate-700/80 p-8 flex flex-col justify-between hover:border-amber-400/60 transition-all hover:bg-slate-800 group shadow-lg"
+                  className="rounded-3xl glass-panel-dark p-8 flex flex-col justify-between hover:border-amber-400/60 transition-all group shadow-2xl hover-lift"
                 >
-                  <div className="space-y-4">
+                  <div className="space-y-5">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold uppercase tracking-wider text-amber-400 bg-amber-400/10 px-2.5 py-1 rounded-md border border-amber-400/20">
+                      <span className="text-xs font-black uppercase tracking-wider text-amber-300 bg-amber-400/15 px-3 py-1 rounded-lg border border-amber-400/30">
                         {prog.badge}
                       </span>
-                      <span className="text-xs text-slate-400 font-medium">{prog.ages}</span>
+                      <span className="text-xs text-slate-300 font-semibold">{prog.ages}</span>
                     </div>
 
-                    <h3 className="text-2xl font-bold text-white group-hover:text-amber-400 transition-colors">
+                    <h3 className="text-2xl font-heading font-extrabold text-white group-hover:text-amber-300 transition-colors">
                       {prog.title}
                     </h3>
 
-                    <p className="text-slate-300 text-sm leading-relaxed">
+                    <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
                       {prog.desc}
                     </p>
 
-                    <div className="pt-4 border-t border-slate-700 space-y-2.5">
-                      <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Highlights:</p>
+                    <div className="pt-4 border-t border-white/10 space-y-3">
+                      <p className="text-[11px] font-black text-amber-400/90 uppercase tracking-wider">Curriculum Highlights:</p>
                       {prog.features.map((feat, fIdx) => (
-                        <div key={fIdx} className="flex items-center space-x-2 text-xs text-slate-300">
+                        <div key={fIdx} className="flex items-center space-x-2.5 text-xs text-slate-200">
                           <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
                           <span>{feat}</span>
                         </div>
@@ -433,7 +432,7 @@ export default function HomePage() {
                   <div className="pt-8">
                     <Link
                       href="/academics"
-                      className="w-full py-2.5 rounded-xl bg-white/10 hover:bg-amber-500 hover:text-slate-950 text-white font-semibold text-xs flex items-center justify-center space-x-2 transition-all"
+                      className="w-full py-3 rounded-xl bg-white/10 hover:bg-amber-400 hover:text-slate-950 text-white font-extrabold text-xs flex items-center justify-center space-x-2 transition-all shadow-sm border border-white/15 group-hover:border-transparent"
                     >
                       <span>Explore Curriculum & Subjects</span>
                       <ArrowRight className="w-3.5 h-3.5" />

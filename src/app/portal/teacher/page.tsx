@@ -205,18 +205,18 @@ export default function TeacherPortalPage() {
   return (
     <div className="space-y-6">
       {/* Top Welcome Banner */}
-      <div className="bg-gradient-to-r from-school-navy-950 via-school-navy-900 to-school-navy-800 rounded-3xl p-6 sm:p-8 text-white shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4 border border-amber-400/20">
-        <div>
-          <div className="flex items-center space-x-2 mb-1.5">
-            <span className="text-xs font-black text-amber-400 uppercase tracking-widest bg-amber-400/10 border border-amber-400/20 px-2.5 py-0.5 rounded-full">
+      <div className="bg-gradient-to-r from-school-navy-950 via-[#0a1e45] to-school-navy-900 rounded-3xl p-6 sm:p-8 text-white shadow-luxury-lg flex flex-col md:flex-row md:items-center justify-between gap-4 border border-amber-400/30 relative overflow-hidden bg-grid-subtle">
+        <div className="relative z-10">
+          <div className="flex items-center space-x-2.5 mb-2">
+            <span className="text-[10px] font-black text-amber-300 uppercase tracking-widest bg-amber-400/20 border border-amber-400/40 px-3 py-0.5 rounded-full shadow-xs">
               Teacher &amp; Faculty Portal
             </span>
             <span className="text-slate-400 text-xs">•</span>
-            <span className="text-slate-300 text-xs font-medium">
+            <span className="text-slate-300 text-xs font-bold">
               {settings.currentTerm} ({settings.academicYear})
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
+          <h1 className="text-2xl sm:text-3xl font-heading font-extrabold tracking-tight text-white">
             Welcome, {teacher ? teacher.fullName : 'Faculty Member'}
           </h1>
           <p className="text-xs sm:text-sm text-slate-300 mt-1">
@@ -226,10 +226,10 @@ export default function TeacherPortalPage() {
           </p>
         </div>
 
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-3 relative z-10">
           <button
             onClick={handleTeacherLogout}
-            className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs border border-white/20 transition-colors flex items-center space-x-1.5"
+            className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-extrabold text-xs border border-white/20 transition-all flex items-center space-x-1.5 shadow-sm hover-lift"
           >
             <LogOut className="w-4 h-4 text-amber-400" />
             <span>Teacher Logout</span>

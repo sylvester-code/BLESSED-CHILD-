@@ -15,39 +15,45 @@ import {
   Heart,
   Facebook,
   Instagram,
-  Youtube
+  Youtube,
+  Sparkles,
+  ArrowRight
 } from 'lucide-react';
 
 export const Footer = () => {
   const { settings } = useSchool();
 
   return (
-    <footer className="bg-school-navy-950 text-slate-300 pt-16 pb-10 border-t-4 border-amber-500">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 pb-12 border-b border-slate-800">
+    <footer className="bg-gradient-to-b from-school-navy-950 via-[#061430] to-[#030a17] text-slate-300 pt-20 pb-12 border-t-2 border-amber-500/80 relative overflow-hidden">
+      {/* Decorative ambient background blur */}
+      <div className="absolute top-0 right-1/4 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-0 left-10 w-96 h-96 bg-school-navy-700/10 rounded-full blur-3xl pointer-events-none" />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 pb-16 border-b border-white/10">
           {/* Column 1: School Identity */}
-          <div className="space-y-4">
-            <div className="flex items-center space-x-3">
-              <SchoolLogo size="md" />
+          <div className="space-y-5">
+            <div className="flex items-center space-x-3.5">
+              <SchoolLogo size="md" className="shadow-lg border border-amber-400/40" />
               <div>
-                <h3 className="text-white font-bold text-lg leading-tight tracking-tight">
+                <h3 className="text-white font-heading font-extrabold text-lg leading-tight tracking-tight">
                   {settings.schoolName}
                 </h3>
-                <p className="text-amber-400 text-xs font-semibold">{settings.city}, Ghana</p>
+                <p className="text-amber-400 text-xs font-bold tracking-wide mt-0.5">{settings.city || 'Takoradi'}, Ghana</p>
               </div>
             </div>
 
-            <p className="text-sm text-slate-400 leading-relaxed">
-              &ldquo;{settings.schoolMotto}&rdquo; — An exceptional educational sanctuary dedicated to academic rigor, Christian character, and modern technological competencies for the Ghanaian child.
+            <p className="text-xs text-slate-400 leading-relaxed font-normal">
+              &ldquo;{settings.schoolMotto}&rdquo; — An exceptional academic sanctuary dedicated to godly discipline, standard-based STEM curricula, and moral grooming for the Ghanaian child.
             </p>
 
-            <div className="flex items-center space-x-3 pt-2">
+            <div className="flex items-center space-x-2.5 pt-1">
               <a
                 href={settings.facebookUrl || "#"}
                 target="_blank"
                 rel="noopener noreferrer"
                 title="Facebook"
-                className="w-8 h-8 rounded-full bg-slate-800 hover:bg-amber-500 hover:text-slate-950 flex items-center justify-center transition-colors text-slate-300"
+                className="w-9 h-9 rounded-xl bg-white/5 hover:bg-amber-500 hover:text-slate-950 border border-white/10 flex items-center justify-center transition-all duration-200 text-slate-300 shadow-sm"
               >
                 <Facebook className="w-4 h-4" />
               </a>
@@ -56,7 +62,7 @@ export const Footer = () => {
                 target="_blank"
                 rel="noopener noreferrer"
                 title="Instagram"
-                className="w-8 h-8 rounded-full bg-slate-800 hover:bg-amber-500 hover:text-slate-950 flex items-center justify-center transition-colors text-slate-300"
+                className="w-9 h-9 rounded-xl bg-white/5 hover:bg-amber-500 hover:text-slate-950 border border-white/10 flex items-center justify-center transition-all duration-200 text-slate-300 shadow-sm"
               >
                 <Instagram className="w-4 h-4" />
               </a>
@@ -65,7 +71,7 @@ export const Footer = () => {
                 target="_blank"
                 rel="noopener noreferrer"
                 title="YouTube"
-                className="w-8 h-8 rounded-full bg-slate-800 hover:bg-amber-500 hover:text-slate-950 flex items-center justify-center transition-colors text-slate-300"
+                className="w-9 h-9 rounded-xl bg-white/5 hover:bg-amber-500 hover:text-slate-950 border border-white/10 flex items-center justify-center transition-all duration-200 text-slate-300 shadow-sm"
               >
                 <Youtube className="w-4 h-4" />
               </a>
@@ -74,117 +80,109 @@ export const Footer = () => {
 
           {/* Column 2: Quick Links */}
           <div>
-            <h4 className="text-white font-semibold text-base mb-4 relative pb-2 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-10 after:h-0.5 after:bg-amber-400">
+            <h4 className="text-white font-heading font-bold text-sm uppercase tracking-wider mb-5 relative pb-2 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-8 after:h-0.5 after:bg-amber-400">
               Quick Navigation
             </h4>
-            <ul className="space-y-2 text-sm">
+            <ul className="space-y-2.5 text-xs">
               <li>
-                <Link href="/about" className="hover:text-amber-400 transition-colors flex items-center">
-                  <ChevronRight className="w-3.5 h-3.5 mr-1 text-amber-400/80" />
+                <Link href="/about" className="hover:text-amber-300 transition-colors flex items-center text-slate-400 hover:translate-x-1 duration-150">
+                  <ChevronRight className="w-3.5 h-3.5 mr-1.5 text-amber-400/70" />
                   About Our Heritage & Values
                 </Link>
               </li>
               <li>
-                <Link href="/academics" className="hover:text-amber-400 transition-colors flex items-center">
-                  <ChevronRight className="w-3.5 h-3.5 mr-1 text-amber-400/80" />
+                <Link href="/academics" className="hover:text-amber-300 transition-colors flex items-center text-slate-400 hover:translate-x-1 duration-150">
+                  <ChevronRight className="w-3.5 h-3.5 mr-1.5 text-amber-400/70" />
                   Academic Curriculum & Calender
                 </Link>
               </li>
               <li>
-                <Link href="/admissions" className="hover:text-amber-400 transition-colors flex items-center">
-                  <ChevronRight className="w-3.5 h-3.5 mr-1 text-amber-400/80" />
-                  Online Admissions & Fees
+                <Link href="/admissions" className="hover:text-amber-300 transition-colors flex items-center text-slate-400 hover:translate-x-1 duration-150">
+                  <ChevronRight className="w-3.5 h-3.5 mr-1.5 text-amber-400/70" />
+                  Online Admissions & Enquiries
                 </Link>
               </li>
               <li>
-                <Link href="/news" className="hover:text-amber-400 transition-colors flex items-center">
-                  <ChevronRight className="w-3.5 h-3.5 mr-1 text-amber-400/80" />
-                  School News & Announcements
+                <Link href="/news" className="hover:text-amber-300 transition-colors flex items-center text-slate-400 hover:translate-x-1 duration-150">
+                  <ChevronRight className="w-3.5 h-3.5 mr-1.5 text-amber-400/70" />
+                  Latest Bulletins & Calendar
                 </Link>
               </li>
               <li>
-                <Link href="/gallery" className="hover:text-amber-400 transition-colors flex items-center">
-                  <ChevronRight className="w-3.5 h-3.5 mr-1 text-amber-400/80" />
-                  Campus Life Photo Gallery
+                <Link href="/gallery" className="hover:text-amber-300 transition-colors flex items-center text-slate-400 hover:translate-x-1 duration-150">
+                  <ChevronRight className="w-3.5 h-3.5 mr-1.5 text-amber-400/70" />
+                  Campus Life & Photo Archive
                 </Link>
               </li>
               <li>
-                <Link href="/contact" className="hover:text-amber-400 transition-colors flex items-center">
-                  <ChevronRight className="w-3.5 h-3.5 mr-1 text-amber-400/80" />
-                  Contact Administration & Map
+                <Link href="/contact" className="hover:text-amber-300 transition-colors flex items-center text-slate-400 hover:translate-x-1 duration-150">
+                  <ChevronRight className="w-3.5 h-3.5 mr-1.5 text-amber-400/70" />
+                  Locate Campus & Direction Map
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Column 3: Academic Divisions & Portals */}
+          {/* Column 3: Contact Info */}
           <div>
-            <h4 className="text-white font-semibold text-base mb-4 relative pb-2 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-10 after:h-0.5 after:bg-amber-400">
-              Academic Divisions
+            <h4 className="text-white font-heading font-bold text-sm uppercase tracking-wider mb-5 relative pb-2 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-8 after:h-0.5 after:bg-amber-400">
+              Campus Contact Desk
             </h4>
-            <ul className="space-y-2 text-sm text-slate-400">
-              <li className="flex items-center">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 mr-2"></span>
-                Creche & Daycare (Ages 3m - 2 yrs)
-              </li>
-              <li className="flex items-center">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 mr-2"></span>
-                Nursery & Kindergarten (KG 1 - KG 2)
-              </li>
-              <li className="flex items-center">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 mr-2"></span>
-                Primary School (Basic 1 - Basic 6)
-              </li>
-              <li className="flex items-center">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 mr-2"></span>
-                Junior High School (JHS 1 - JHS 3)
-              </li>
-              <li className="flex items-center">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 mr-2"></span>
-                STEM & Robotics Lab Program
-              </li>
-            </ul>
-
-            <div className="mt-5 p-3 rounded-lg bg-school-navy-900 border border-slate-800 text-xs text-slate-400">
-              <p className="text-amber-400 font-semibold uppercase tracking-wider text-[11px] mb-1">
-                Admissions Ongoing
-              </p>
-              <p className="text-[11px] text-slate-300">
-                Enrollment is currently open across Creche, Primary & JHS. Contact administration for prospectus.
-              </p>
-            </div>
-          </div>
-
-          {/* Column 4: Location & Contact */}
-          <div>
-            <h4 className="text-white font-semibold text-base mb-4 relative pb-2 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-10 after:h-0.5 after:bg-amber-400">
-              Get in Touch
-            </h4>
-            <div className="space-y-3 text-sm text-slate-300">
+            <div className="space-y-3.5 text-xs text-slate-400">
               <div className="flex items-start space-x-3">
-                <MapPin className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
-                <span>{settings.address}</span>
+                <MapPin className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+                <span className="leading-relaxed">
+                  {settings.address || 'Anaji-Mpatado Road'}, {settings.locationCity || settings.city || 'Sekondi-Takoradi'}, Western Region, Ghana
+                </span>
               </div>
               <div className="flex items-center space-x-3">
                 <Phone className="w-4 h-4 text-amber-400 flex-shrink-0" />
-                <div>
-                  <a href={`tel:${settings.primaryPhone}`} className="hover:text-white block">{settings.primaryPhone}</a>
-                  <a href={`tel:${settings.secondaryPhone}`} className="hover:text-white block text-xs text-slate-400">{settings.secondaryPhone}</a>
-                </div>
+                <a href={`tel:${settings.primaryPhone}`} className="hover:text-amber-300 font-medium transition-colors">
+                  {settings.primaryPhone}
+                </a>
               </div>
               <div className="flex items-center space-x-3">
                 <Mail className="w-4 h-4 text-amber-400 flex-shrink-0" />
-                <a href={`mailto:${settings.email}`} className="hover:text-white truncate">{settings.email}</a>
+                <a href={`mailto:${settings.email || settings.admissionsEmail || 'info@blessedchildschool.edu.gh'}`} className="hover:text-amber-300 transition-colors">
+                  {settings.email || settings.admissionsEmail || 'info@blessedchildschool.edu.gh'}
+                </a>
               </div>
-              <div className="flex items-center space-x-3 text-xs text-slate-400 pt-1">
-                <Clock className="w-4 h-4 text-amber-400 flex-shrink-0" />
-                <span>Mon – Fri: 7:00 AM – 4:30 PM GMT</span>
+              <div className="flex items-start space-x-3">
+                <Clock className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+                <span>Mon – Fri: 7:00 AM – 4:30 PM (Creche to JHS)</span>
               </div>
             </div>
+          </div>
 
-            <div className="mt-4 flex items-center space-x-2 text-xs text-slate-400 bg-slate-900/60 p-2.5 rounded-lg border border-slate-800">
-              <ShieldCheck className="w-5 h-5 text-emerald-400 flex-shrink-0" />
-              <span>Registered & Accredited by Ghana Education Service (GES)</span>
+          {/* Column 4: Portals & Accreditation */}
+          <div className="space-y-4">
+            <h4 className="text-white font-heading font-bold text-sm uppercase tracking-wider mb-5 relative pb-2 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-8 after:h-0.5 after:bg-amber-400">
+              Staff & Parent Portals
+            </h4>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Authorized digital access for teachers, administrative directors, accountants, and admissions desk.
+            </p>
+
+            <div className="space-y-2 pt-1">
+              <Link
+                href="/admin-portal"
+                className="w-full flex items-center justify-between p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-white transition-all group"
+              >
+                <span>Administrative Console</span>
+                <ArrowRight className="w-3.5 h-3.5 text-amber-400 group-hover:translate-x-1 transition-transform" />
+              </Link>
+              <Link
+                href="/portal/teacher"
+                className="w-full flex items-center justify-between p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-white transition-all group"
+              >
+                <span>Teacher Grading Workspace</span>
+                <ArrowRight className="w-3.5 h-3.5 text-amber-400 group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </div>
+
+            <div className="pt-2 flex items-center space-x-2 text-[11px] text-amber-300/90 font-semibold bg-amber-400/10 p-2.5 rounded-xl border border-amber-400/20">
+              <ShieldCheck className="w-4 h-4 text-amber-400 flex-shrink-0" />
+              <span>Registered with Ghana Education Service (GES)</span>
             </div>
           </div>
         </div>
@@ -192,13 +190,12 @@ export const Footer = () => {
         {/* Bottom Bar */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-4">
           <p>© {new Date().getFullYear()} {settings.schoolName}. All rights reserved.</p>
-          <p className="flex items-center">
-            Designed for Academic Excellence in Anaji-Mpatado, Western Region, Ghana
-          </p>
-          <div className="flex items-center space-x-4">
-            <Link href="/privacy" className="hover:text-slate-400">Privacy Policy</Link>
+          <div className="flex items-center space-x-6">
+            <Link href="/privacy" className="hover:text-slate-300 transition-colors">Privacy Policy</Link>
             <span>•</span>
-            <Link href="/terms" className="hover:text-slate-400">Terms of Service</Link>
+            <Link href="/terms" className="hover:text-slate-300 transition-colors">Code of Conduct</Link>
+            <span>•</span>
+            <span className="text-slate-400 font-medium">Anaji-Mpatado, Sekondi-Takoradi</span>
           </div>
         </div>
       </div>
