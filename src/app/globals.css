@@ -1,0 +1,79 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    /* Dynamic Theme Engine Variables */
+    --theme-navy-950: #0b1c3d;
+    --theme-navy-900: #0f2b5c;
+    --theme-navy-800: #11329e;
+    --theme-navy-700: #0e39c4;
+    --theme-navy-600: #144ee9;
+    --theme-navy-500: #2b6bf8;
+    --theme-navy-400: #5993ff;
+    --theme-navy-300: #8eb9ff;
+    --theme-navy-200: #bcd3ff;
+    --theme-navy-100: #d9e6ff;
+    --theme-navy-50: #eef4ff;
+
+    --theme-gold-500: #d4a712;
+    --theme-gold-400: #eec520;
+    --theme-gold-300: #f2d84d;
+    --theme-gold-200: #f7ea8e;
+    --theme-gold-100: #fbf6c6;
+    --theme-gold-50: #fdfbe9;
+  }
+
+  body {
+    @apply bg-slate-50 text-slate-900 font-sans antialiased;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif tracking-tight;
+  }
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Print Styles for Terminal Report Cards and Payment Receipts */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+    font-size: 11pt !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  .page-break {
+    page-break-before: always;
+  }
+  .report-card-container {
+    border: 2px solid #0f2b5c !important;
+    padding: 1.5cm !important;
+    box-shadow: none !important;
+    width: 100% !important;
+  }
+}
