@@ -51,7 +51,11 @@ export default function PortalLoginPage() {
     setTimeout(() => {
       const res = loginPortalUser(username, password);
       if (res.success && res.redirectUrl) {
-        router.push(res.redirectUrl);
+        if (typeof window !== 'undefined') {
+          window.location.href = res.redirectUrl;
+        } else {
+          router.push(res.redirectUrl);
+        }
       } else {
         setError(res.error || 'Invalid credentials. Please verify your assigned username and password with the Super Administrator.');
         setLoading(false);
