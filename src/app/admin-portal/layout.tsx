@@ -65,7 +65,7 @@ export default function AdminPortalLayout({
   // If not authenticated, show Super Admin Login Gateway
   if (!isAdminAuthenticated) {
     return (
-      <div className="min-h-screen flex overflow-hidden relative" style={{ background: 'linear-gradient(135deg, #020817 0%, #040e21 40%, #07142e 70%, #020817 100%)' }}>
+      <div className="min-h-screen flex overflow-y-auto relative" style={{ background: 'linear-gradient(135deg, #020817 0%, #040e21 40%, #07142e 70%, #020817 100%)' }}>
         {/* Background effects */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute -top-60 -left-60 w-[700px] h-[700px] rounded-full opacity-15"
@@ -128,7 +128,7 @@ export default function AdminPortalLayout({
         </div>
 
         {/* Right Login Panel */}
-        <div className="flex-1 flex items-center justify-center p-6 relative z-10">
+        <div className="flex-1 flex items-start justify-center px-4 py-8 sm:py-12 relative z-10 min-h-screen">
           <div className="w-full max-w-md">
             {/* Mobile Logo */}
             <div className="xl:hidden text-center mb-8 space-y-3">
@@ -294,7 +294,7 @@ export default function AdminPortalLayout({
             className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm"
             onClick={() => setMobileSidebarOpen(false)}
           ></div>
-          <div className="relative z-10 w-64 bg-school-navy-950 flex flex-col">
+          <div className="relative z-10 w-72 bg-school-navy-950 flex flex-col h-full overflow-y-auto">
             <div className="absolute top-3 right-3">
               <button
                 onClick={() => setMobileSidebarOpen(false)}
@@ -309,7 +309,7 @@ export default function AdminPortalLayout({
       )}
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 min-h-0">
         {/* Top Header with Mobile Hamburger toggle */}
         <div className="flex items-center bg-white border-b border-slate-200 lg:hidden px-4 h-14 justify-between">
           <button
@@ -326,7 +326,7 @@ export default function AdminPortalLayout({
 
         <AdminHeader />
 
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+        <main className="flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6 lg:p-8">
           {children}
         </main>
       </div>
