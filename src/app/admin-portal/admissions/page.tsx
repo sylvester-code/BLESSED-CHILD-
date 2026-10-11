@@ -17,7 +17,8 @@ import {
   Filter,
   UserCheck,
   XCircle,
-  HelpCircle
+  HelpCircle,
+  Trash2
 } from 'lucide-react';
 
 export default function AdmissionsAdminPage() {
@@ -25,7 +26,8 @@ export default function AdmissionsAdminPage() {
     admissions,
     classes,
     updateAdmissionStatus,
-    convertAdmissionToStudent
+    convertAdmissionToStudent,
+    deleteAdmission
   } = useSchool();
 
   const [selectedStatus, setSelectedStatus] = useState<string>('All');
@@ -220,6 +222,18 @@ export default function AdmissionsAdminPage() {
                               Active Student
                             </span>
                           )}
+
+                          <button
+                            onClick={() => {
+                              if (confirm(`Delete application for ${app.applicantFirstName} ${app.applicantLastName} (${app.applicationNo})?`)) {
+                                deleteAdmission(app.id);
+                              }
+                            }}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                            title="Delete application"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
                         </div>
                       </td>
                     </tr>

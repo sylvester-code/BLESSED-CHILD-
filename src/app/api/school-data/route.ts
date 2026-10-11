@@ -1,6 +1,44 @@
 import { NextResponse } from 'next/server';
-import { initialSiteSettings, initialAnnouncements, initialUsers } from '@/data/initialData';
-import { Teacher, Student, User } from '@/types';
+import {
+  initialSiteSettings,
+  initialAnnouncements,
+  initialUsers,
+  initialTeachers,
+  initialStudents,
+  initialParents,
+  initialPrefects,
+  initialFeePayments,
+  initialExpenses,
+  initialAdmissions,
+  initialAssessmentScores,
+  initialLibraryBooks,
+  initialInventory,
+  initialLearningMaterials,
+  initialQuizzes,
+  initialHomework,
+  initialTimetable,
+  initialAuditLogs
+} from '@/data/initialData';
+import {
+  Teacher,
+  Student,
+  Parent,
+  User,
+  SchoolPrefect,
+  FeePayment,
+  ExpenseRecord,
+  AdmissionApplication,
+  AssessmentScore,
+  LibraryBook,
+  InventoryItem,
+  LearningMaterial,
+  OnlineQuiz,
+  HomeworkAssignment,
+  TimetableSlot,
+  AuditLog,
+  SchoolAnnouncement,
+  SiteSettings
+} from '@/types';
 import fs from 'fs';
 import path from 'path';
 
@@ -23,20 +61,46 @@ function filterAuthorizedAccounts(userList: User[], teacherList: Teacher[]): Use
   });
 }
 
-// In-memory server cache
+// In-memory server cache initialized clean
 let serverDataCache: {
-  settings: typeof initialSiteSettings;
-  announcements: typeof initialAnnouncements;
+  settings: SiteSettings;
+  announcements: SchoolAnnouncement[];
   teachers: Teacher[];
   students: Student[];
+  parents: Parent[];
   users: User[];
+  prefects: SchoolPrefect[];
+  feePayments: FeePayment[];
+  expenses: ExpenseRecord[];
+  admissions: AdmissionApplication[];
+  assessmentScores: AssessmentScore[];
+  libraryBooks: LibraryBook[];
+  inventory: InventoryItem[];
+  learningMaterials: LearningMaterial[];
+  quizzes: OnlineQuiz[];
+  homework: HomeworkAssignment[];
+  timetable: TimetableSlot[];
+  auditLogs: AuditLog[];
   updatedAt: string;
 } = {
   settings: { ...initialSiteSettings },
   announcements: [...initialAnnouncements],
-  teachers: [],
-  students: [],
+  teachers: [...initialTeachers],
+  students: [...initialStudents],
+  parents: [...initialParents],
   users: filterAuthorizedAccounts(initialUsers, []),
+  prefects: [...initialPrefects],
+  feePayments: [...initialFeePayments],
+  expenses: [...initialExpenses],
+  admissions: [...initialAdmissions],
+  assessmentScores: [...initialAssessmentScores],
+  libraryBooks: [...initialLibraryBooks],
+  inventory: [...initialInventory],
+  learningMaterials: [...initialLearningMaterials],
+  quizzes: [...initialQuizzes],
+  homework: [...initialHomework],
+  timetable: [...initialTimetable],
+  auditLogs: [...initialAuditLogs],
   updatedAt: new Date().toISOString()
 };
 
@@ -46,16 +110,23 @@ try {
     const raw = fs.readFileSync(DATA_FILE_PATH, 'utf-8');
     const parsed = JSON.parse(raw);
     if (parsed.settings) serverDataCache.settings = { ...serverDataCache.settings, ...parsed.settings };
-    if (parsed.announcements && Array.isArray(parsed.announcements)) {
-      serverDataCache.announcements = parsed.announcements;
-    }
-    if (parsed.teachers && Array.isArray(parsed.teachers)) {
-      serverDataCache.teachers = parsed.teachers;
-    }
-    if (parsed.students && Array.isArray(parsed.students)) {
-      serverDataCache.students = parsed.students;
-    }
-    if (parsed.users && Array.isArray(parsed.users)) {
+    if (Array.isArray(parsed.announcements)) serverDataCache.announcements = parsed.announcements;
+    if (Array.isArray(parsed.teachers)) serverDataCache.teachers = parsed.teachers;
+    if (Array.isArray(parsed.students)) serverDataCache.students = parsed.students;
+    if (Array.isArray(parsed.parents)) serverDataCache.parents = parsed.parents;
+    if (Array.isArray(parsed.prefects)) serverDataCache.prefects = parsed.prefects;
+    if (Array.isArray(parsed.feePayments)) serverDataCache.feePayments = parsed.feePayments;
+    if (Array.isArray(parsed.expenses)) serverDataCache.expenses = parsed.expenses;
+    if (Array.isArray(parsed.admissions)) serverDataCache.admissions = parsed.admissions;
+    if (Array.isArray(parsed.assessmentScores)) serverDataCache.assessmentScores = parsed.assessmentScores;
+    if (Array.isArray(parsed.libraryBooks)) serverDataCache.libraryBooks = parsed.libraryBooks;
+    if (Array.isArray(parsed.inventory)) serverDataCache.inventory = parsed.inventory;
+    if (Array.isArray(parsed.learningMaterials)) serverDataCache.learningMaterials = parsed.learningMaterials;
+    if (Array.isArray(parsed.quizzes)) serverDataCache.quizzes = parsed.quizzes;
+    if (Array.isArray(parsed.homework)) serverDataCache.homework = parsed.homework;
+    if (Array.isArray(parsed.timetable)) serverDataCache.timetable = parsed.timetable;
+    if (Array.isArray(parsed.auditLogs)) serverDataCache.auditLogs = parsed.auditLogs;
+    if (Array.isArray(parsed.users)) {
       serverDataCache.users = filterAuthorizedAccounts(parsed.users, serverDataCache.teachers);
     }
     if (parsed.updatedAt) serverDataCache.updatedAt = parsed.updatedAt;
@@ -85,19 +156,24 @@ export async function POST(req: Request) {
       };
     }
 
-    if (body.announcements && Array.isArray(body.announcements)) {
-      serverDataCache.announcements = body.announcements;
-    }
+    if (Array.isArray(body.announcements)) serverDataCache.announcements = body.announcements;
+    if (Array.isArray(body.teachers)) serverDataCache.teachers = body.teachers;
+    if (Array.isArray(body.students)) serverDataCache.students = body.students;
+    if (Array.isArray(body.parents)) serverDataCache.parents = body.parents;
+    if (Array.isArray(body.prefects)) serverDataCache.prefects = body.prefects;
+    if (Array.isArray(body.feePayments)) serverDataCache.feePayments = body.feePayments;
+    if (Array.isArray(body.expenses)) serverDataCache.expenses = body.expenses;
+    if (Array.isArray(body.admissions)) serverDataCache.admissions = body.admissions;
+    if (Array.isArray(body.assessmentScores)) serverDataCache.assessmentScores = body.assessmentScores;
+    if (Array.isArray(body.libraryBooks)) serverDataCache.libraryBooks = body.libraryBooks;
+    if (Array.isArray(body.inventory)) serverDataCache.inventory = body.inventory;
+    if (Array.isArray(body.learningMaterials)) serverDataCache.learningMaterials = body.learningMaterials;
+    if (Array.isArray(body.quizzes)) serverDataCache.quizzes = body.quizzes;
+    if (Array.isArray(body.homework)) serverDataCache.homework = body.homework;
+    if (Array.isArray(body.timetable)) serverDataCache.timetable = body.timetable;
+    if (Array.isArray(body.auditLogs)) serverDataCache.auditLogs = body.auditLogs;
 
-    if (body.teachers && Array.isArray(body.teachers)) {
-      serverDataCache.teachers = body.teachers;
-    }
-
-    if (body.students && Array.isArray(body.students)) {
-      serverDataCache.students = body.students;
-    }
-
-    if (body.users && Array.isArray(body.users)) {
+    if (Array.isArray(body.users)) {
       serverDataCache.users = filterAuthorizedAccounts(body.users, serverDataCache.teachers);
     }
 

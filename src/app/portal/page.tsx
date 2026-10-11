@@ -56,7 +56,7 @@ export default function PortalLoginPage() {
         setError(res.error || 'Invalid credentials. Please verify your assigned username and password with the Super Administrator.');
         setLoading(false);
       }
-    }, 600);
+    }, 350);
   };
 
   return (

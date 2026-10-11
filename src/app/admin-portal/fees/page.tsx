@@ -17,7 +17,8 @@ import {
   X,
   CreditCard,
   Building,
-  Smartphone
+  Smartphone,
+  Trash2
 } from 'lucide-react';
 
 export default function FeesAdminPage() {
@@ -29,7 +30,10 @@ export default function FeesAdminPage() {
     expenses,
     recordFeePayment,
     addFeeItem,
-    addExpense
+    addExpense,
+    deleteFeePayment,
+    deleteExpense,
+    deleteFeeItem
   } = useSchool();
 
   const [activeTab, setActiveTab] = useState<'payments' | 'debtors' | 'structure' | 'expenses'>('payments');
@@ -291,12 +295,25 @@ export default function FeesAdminPage() {
                       <td className="py-3 px-4 text-slate-500">{p.paymentDate}</td>
                       <td className="py-3 px-4 text-slate-600">{p.receivedBy}</td>
                       <td className="py-3 px-4 text-right">
-                        <button
-                          onClick={() => setActiveReceipt(p)}
-                          className="px-2.5 py-1 rounded-lg bg-school-navy-50 hover:bg-school-navy-100 text-school-navy-900 font-bold text-xs"
-                        >
-                          View Receipt
-                        </button>
+                        <div className="flex items-center justify-end space-x-1.5">
+                          <button
+                            onClick={() => setActiveReceipt(p)}
+                            className="px-2.5 py-1 rounded-lg bg-school-navy-50 hover:bg-school-navy-100 text-school-navy-900 font-bold text-xs"
+                          >
+                            View Receipt
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (confirm(`Delete fee payment receipt ${p.receiptNumber}?`)) {
+                                deleteFeePayment(p.id);
+                              }
+                            }}
+                            className="p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                            title="Delete receipt"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -360,9 +377,22 @@ export default function FeesAdminPage() {
                   <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded uppercase">
                     {item.frequency}
                   </span>
-                  <span className="font-black text-slate-900 text-base">
-                    {settings.currencySymbol} {item.amount.toLocaleString()}
-                  </span>
+                  <div className="flex items-center space-x-2">
+                    <span className="font-black text-slate-900 text-base">
+                      {settings.currencySymbol} {item.amount.toLocaleString()}
+                    </span>
+                    <button
+                      onClick={() => {
+                        if (confirm(`Delete fee levy '${item.name}'?`)) {
+                          deleteFeeItem(item.id);
+                        }
+                      }}
+                      className="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                      title="Delete fee levy"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
                 <h4 className="font-bold text-slate-900 text-sm">{item.name}</h4>
                 <p className="text-[11px] text-slate-500">Applicable to all enrolled students for {settings.academicYear}.</p>
@@ -383,6 +413,7 @@ export default function FeesAdminPage() {
                   <th className="py-3 px-4">Disbursed By</th>
                   <th className="py-3 px-4">Date</th>
                   <th className="py-3 px-4">Status</th>
+                  <th className="py-3 px-4 text-right">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -401,6 +432,19 @@ export default function FeesAdminPage() {
                       <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
                         {e.status}
                       </span>
+                    </td>
+                    <td className="py-3 px-4 text-right">
+                      <button
+                        onClick={() => {
+                          if (confirm(`Delete expense '${e.title}'?`)) {
+                            deleteExpense(e.id);
+                          }
+                        }}
+                        className="p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                        title="Delete expense"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
                     </td>
                   </tr>
                 ))}

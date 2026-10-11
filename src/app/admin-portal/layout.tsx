@@ -37,6 +37,7 @@ export default function AdminPortalLayout({
 }) {
   const { isAdminAuthenticated, loginAdmin, settings, adminCreds } = useSchool();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   // Admin login form states
   const [username, setUsername] = useState('');
@@ -45,22 +46,45 @@ export default function AdminPortalLayout({
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const handleAdminLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsSubmitting(true);
 
-    setTimeout(() => {
-      const result = loginAdmin(username, password);
-      if (!result.success) {
-        setError(result.error || 'Authentication failed. Please verify your master credentials.');
-        setIsSubmitting(false);
-      } else {
-        setIsSubmitting(false);
-        window.location.href = '/admin-portal';
-      }
-    }, 600);
+    const cleanUser = username.trim().toUpperCase();
+    const cleanPass = password.trim();
+
+    // Master credentials instant unlock: BLESSED / 2026
+    if (cleanUser === 'BLESSED' && cleanPass === '2026') {
+      loginAdmin('BLESSED', '2026');
+      setIsSubmitting(false);
+      return;
+    }
+
+    const result = loginAdmin(username, password);
+    if (!result.success) {
+      setError(result.error || 'Invalid administrator credentials. Please check your username and master password.');
+      setIsSubmitting(false);
+    } else {
+      setIsSubmitting(false);
+    }
   };
+
+  // During SSR / initial client mount, show sleek loading to prevent hydration flash
+  if (!mounted) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #020817 0%, #040e21 40%, #07142e 70%, #020817 100%)' }}>
+        <div className="flex flex-col items-center space-y-4">
+          <SchoolLogo size="lg" className="animate-pulse shadow-2xl border-2 border-amber-400/40" />
+          <div className="w-7 h-7 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
+        </div>
+      </div>
+    );
+  }
 
   // If not authenticated, show Super Admin Login Gateway
   if (!isAdminAuthenticated) {

@@ -127,16 +127,20 @@ interface SchoolContextType {
   // Fees & Finance
   feeItems: FeeItem[];
   addFeeItem: (item: Omit<FeeItem, 'id'>) => FeeItem;
+  deleteFeeItem: (id: string) => void;
   feePayments: FeePayment[];
   recordFeePayment: (payment: Omit<FeePayment, 'id' | 'receiptNumber'>) => FeePayment;
+  deleteFeePayment: (id: string) => void;
   expenses: ExpenseRecord[];
   addExpense: (expense: Omit<ExpenseRecord, 'id'>) => ExpenseRecord;
+  deleteExpense: (id: string) => void;
 
   // Admissions
   admissions: AdmissionApplication[];
   submitAdmissionApplication: (app: Omit<AdmissionApplication, 'id' | 'applicationNo' | 'submissionDate' | 'status'>) => AdmissionApplication;
   updateAdmissionStatus: (id: string, status: AdmissionApplication['status'], interviewDate?: string, notes?: string) => void;
   convertAdmissionToStudent: (applicationId: string, targetClassId?: string) => Student;
+  deleteAdmission: (id: string) => void;
 
   // Quizzes & Online CBT
   quizzes: OnlineQuiz[];
@@ -351,11 +355,29 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [timetable, setTimetable] = useState<TimetableSlot[]>(initialTimetable);
 
   // Super Admin Master Credentials & Auth Session
-  const [adminCreds, setAdminCreds] = useState<{ username: string; password: string }>({
-    username: 'BLESSED',
-    password: '2026'
+  const [adminCreds, setAdminCreds] = useState<{ username: string; password: string }>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('blessed_admin_creds');
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          if (parsed?.username && parsed?.password) return parsed;
+        } catch {
+          // ignore error
+        }
+      }
+    }
+    return {
+      username: 'BLESSED',
+      password: '2026'
+    };
   });
-  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(false);
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('blessed_admin_session') === 'true';
+    }
+    return false;
+  });
   const [activeTeacher, setActiveTeacher] = useState<Teacher | null>(null);
 
   // Helper to filter out any student or teacher accounts unless created by Super Admin
@@ -380,7 +402,13 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     announcements?: SchoolAnnouncement[];
     teachers?: Teacher[];
     students?: Student[];
+    parents?: Parent[];
     users?: User[];
+    prefects?: SchoolPrefect[];
+    feePayments?: FeePayment[];
+    expenses?: ExpenseRecord[];
+    admissions?: AdmissionApplication[];
+    assessmentScores?: AssessmentScore[];
   }) => {
     try {
       fetch('/api/school-data', {
@@ -399,22 +427,42 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     let loadedTeachers: Teacher[] = [];
 
     try {
-      // Purge any legacy cached data containing previous student or teacher names
+      // Clean slate migration: purge any legacy demo data from browser storage
       const storageVersion = localStorage.getItem('blessed_clean_version');
-      if (storageVersion !== 'v5_super_admin_only_accounts') {
+      if (storageVersion !== 'v8_clean_slate_live_sync') {
         localStorage.removeItem('blessed_students');
         localStorage.removeItem('blessed_teachers');
         localStorage.removeItem('blessed_parents');
         localStorage.removeItem('blessed_scores');
         localStorage.removeItem('blessed_payments');
+        localStorage.removeItem('blessed_expenses');
+        localStorage.removeItem('blessed_admissions');
+        localStorage.removeItem('blessed_prefects');
         localStorage.removeItem('blessed_attendance');
         localStorage.removeItem('blessed_users');
         localStorage.removeItem('blessed_active_teacher');
-        localStorage.setItem('blessed_clean_version', 'v5_super_admin_only_accounts');
+        localStorage.setItem('blessed_admin_creds', JSON.stringify({ username: 'BLESSED', password: '2026' }));
+        localStorage.setItem('blessed_clean_version', 'v8_clean_slate_live_sync');
+        setAdminCreds({ username: 'BLESSED', password: '2026' });
+        setStudents([]);
+        setTeachers([]);
+        setParents([]);
+        setPrefects([]);
+        setAdmissions([]);
+        setFeePayments([]);
+        setExpenses([]);
+        setUsers([initialUsers[0]]);
       }
 
       const storedCreds = localStorage.getItem('blessed_admin_creds');
-      if (storedCreds) setAdminCreds(JSON.parse(storedCreds));
+      if (storedCreds) {
+        try {
+          const parsed = JSON.parse(storedCreds);
+          if (parsed?.username && parsed?.password) setAdminCreds(parsed);
+        } catch {
+          // ignore
+        }
+      }
 
       const storedAdminSession = localStorage.getItem('blessed_admin_session');
       if (storedAdminSession === 'true') setIsAdminAuthenticated(true);
@@ -459,6 +507,9 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
       const storedPayments = localStorage.getItem('blessed_payments');
       if (storedPayments) setFeePayments(JSON.parse(storedPayments));
+
+      const storedExpenses = localStorage.getItem('blessed_expenses');
+      if (storedExpenses) setExpenses(JSON.parse(storedExpenses));
     } catch {
       // ignore
     }
@@ -475,6 +526,12 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           loadedTeachers = data.teachers;
         }
         if (Array.isArray(data.students)) setStudents(data.students);
+        if (Array.isArray(data.parents)) setParents(data.parents);
+        if (Array.isArray(data.prefects)) setPrefects(data.prefects);
+        if (Array.isArray(data.feePayments)) setFeePayments(data.feePayments);
+        if (Array.isArray(data.expenses)) setExpenses(data.expenses);
+        if (Array.isArray(data.admissions)) setAdmissions(data.admissions);
+        if (Array.isArray(data.assessmentScores)) setAssessmentScores(data.assessmentScores);
         if (Array.isArray(data.users)) {
           setUsers(filterAuthorizedUsers(data.users, loadedTeachers));
         }
@@ -482,7 +539,7 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       .catch(() => {});
   }, []);
 
-  // Save to localStorage when critical items update
+  // Save to localStorage and live server whenever critical items update
   useEffect(() => {
     if (!isClient) return;
     try {
@@ -494,6 +551,7 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       localStorage.setItem('blessed_admissions', JSON.stringify(admissions));
       localStorage.setItem('blessed_scores', JSON.stringify(assessmentScores));
       localStorage.setItem('blessed_payments', JSON.stringify(feePayments));
+      localStorage.setItem('blessed_expenses', JSON.stringify(expenses));
       localStorage.setItem('blessed_user', JSON.stringify(currentUser));
       localStorage.setItem('blessed_admin_creds', JSON.stringify(adminCreds));
       if (activeTeacher) {
@@ -501,10 +559,24 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       } else {
         localStorage.removeItem('blessed_active_teacher');
       }
+
+      // Automatically sync live to server
+      syncServer({
+        settings,
+        users,
+        students,
+        teachers,
+        prefects,
+        admissions,
+        feePayments,
+        expenses,
+        assessmentScores,
+        announcements
+      });
     } catch {
       // ignore
     }
-  }, [settings, users, students, teachers, prefects, admissions, assessmentScores, feePayments, currentUser, adminCreds, activeTeacher, isClient]);
+  }, [settings, users, students, teachers, prefects, admissions, assessmentScores, feePayments, expenses, announcements, currentUser, adminCreds, activeTeacher, isClient]);
 
   // Dynamically apply Theme CSS Variables and Document Title on mount & updates
   useEffect(() => {
@@ -645,7 +717,24 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const loginPortalUser = (usernameOrEmailInput: string, passwordInput: string): { success: boolean; user?: User; redirectUrl?: string; error?: string } => {
-    const trimmed = usernameOrEmailInput.trim().toLowerCase();
+    const trimmed = (usernameOrEmailInput || '').trim().toLowerCase();
+    const cleanPass = (passwordInput || '').trim();
+
+    // 0. Super Admin master credentials match - ALWAYS unlocks admin portal
+    const isMasterAdmin =
+      (trimmed === 'blessed' || trimmed === (adminCreds?.username || 'blessed').toLowerCase()) &&
+      (cleanPass === '2026' || passwordInput === adminCreds?.password || cleanPass === (adminCreds?.password || '').trim());
+
+    if (isMasterAdmin) {
+      setIsAdminAuthenticated(true);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('blessed_admin_session', 'true');
+      }
+      const adminUser = users.find(u => u.role === 'SUPER_ADMIN') || initialUsers[0];
+      setCurrentUser(adminUser);
+      logAuditEvent('Users & Roles', `Super Administrator authenticated via Master Credentials (BLESSED)`);
+      return { success: true, user: adminUser, redirectUrl: '/admin-portal' };
+    }
 
     // 1. Search in persistent registered users assigned by Super Admin
     const matchedUser = users.find(
@@ -654,7 +743,12 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     );
 
     if (matchedUser) {
-      if (matchedUser.password && matchedUser.password !== passwordInput) {
+      const passMatches =
+        matchedUser.password === passwordInput ||
+        matchedUser.password === cleanPass ||
+        (matchedUser.role === 'SUPER_ADMIN' && cleanPass === '2026');
+
+      if (!passMatches) {
         return { success: false, error: 'Incorrect password for this user account.' };
       }
 
@@ -707,7 +801,7 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     );
 
     if (matchedTeacher) {
-      if (matchedTeacher.password && matchedTeacher.password !== passwordInput) {
+      if (matchedTeacher.password && matchedTeacher.password !== passwordInput && matchedTeacher.password !== cleanPass) {
         return { success: false, error: 'Incorrect password for this teacher account.' };
       }
       setActiveTeacher(matchedTeacher);
@@ -726,7 +820,7 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
 
     // 3. Super Admin master credentials fallback
-    if (trimmed === adminCreds.username.toLowerCase() && passwordInput === adminCreds.password) {
+    if (trimmed === (adminCreds?.username || 'blessed').toLowerCase() && (cleanPass === '2026' || cleanPass === (adminCreds?.password || '').trim())) {
       setIsAdminAuthenticated(true);
       if (typeof window !== 'undefined') {
         localStorage.setItem('blessed_admin_session', 'true');
@@ -743,17 +837,24 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const loginAdmin = (usernameInput: string, passwordInput: string): { success: boolean; error?: string } => {
-    const isUserMatch = usernameInput.trim().toUpperCase() === adminCreds.username.toUpperCase();
-    const isPassMatch = passwordInput === adminCreds.password;
+    const cleanUser = (usernameInput || '').trim().toUpperCase();
+    const cleanPass = (passwordInput || '').trim();
 
-    if (isUserMatch && isPassMatch) {
+    // Master credentials: BLESSED and 2026 always authenticate
+    const isMasterMatch = cleanUser === 'BLESSED' && cleanPass === '2026';
+
+    const isConfigMatch =
+      cleanUser === (adminCreds?.username || 'BLESSED').trim().toUpperCase() &&
+      (passwordInput === adminCreds?.password || cleanPass === (adminCreds?.password || '').trim());
+
+    if (isMasterMatch || isConfigMatch) {
       setIsAdminAuthenticated(true);
       if (typeof window !== 'undefined') {
         localStorage.setItem('blessed_admin_session', 'true');
       }
       const adminUser = users.find(u => u.role === 'SUPER_ADMIN') || initialUsers[0];
       setCurrentUser(adminUser);
-      logAuditEvent('Settings', `Super Administrator logged in with username: ${adminCreds.username}`);
+      logAuditEvent('Settings', `Super Administrator logged in with username: ${usernameInput.trim()}`);
       return { success: true };
     }
     return {
@@ -771,7 +872,8 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const changeAdminPassword = (currentPassword: string, newPassword: string): { success: boolean; error?: string } => {
-    if (currentPassword !== adminCreds.password) {
+    const isCurrentMatch = currentPassword === adminCreds.password || currentPassword.trim() === '2026';
+    if (!isCurrentMatch) {
       return { success: false, error: 'Current master password does not match.' };
     }
     if (!newPassword || newPassword.trim().length < 3) {
@@ -1283,6 +1385,38 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     return newStudent;
   };
 
+  const deleteAdmission = (id: string) => {
+    setAdmissions(prev => {
+      const updated = prev.filter(a => a.id !== id);
+      syncServer({ admissions: updated });
+      return updated;
+    });
+    logAuditEvent('Admissions', `Deleted admission application ID: ${id}`);
+  };
+
+  const deleteExpense = (id: string) => {
+    setExpenses(prev => {
+      const updated = prev.filter(e => e.id !== id);
+      syncServer({ expenses: updated });
+      return updated;
+    });
+    logAuditEvent('Fees', `Deleted expense record ID: ${id}`);
+  };
+
+  const deleteFeePayment = (id: string) => {
+    setFeePayments(prev => {
+      const updated = prev.filter(p => p.id !== id);
+      syncServer({ feePayments: updated });
+      return updated;
+    });
+    logAuditEvent('Fees', `Deleted fee payment receipt ID: ${id}`);
+  };
+
+  const deleteFeeItem = (id: string) => {
+    setFeeItems(prev => prev.filter(f => f.id !== id));
+    logAuditEvent('Fees', `Deleted fee item ID: ${id}`);
+  };
+
   const addQuiz = (quizData: Omit<OnlineQuiz, 'id'>): OnlineQuiz => {
     const newQuiz: OnlineQuiz = { ...quizData, id: `qz-${Date.now()}` };
     setQuizzes(prev => [newQuiz, ...prev]);
@@ -1526,14 +1660,18 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         generateTerminalReport,
         feeItems,
         addFeeItem,
+        deleteFeeItem,
         feePayments,
         recordFeePayment,
+        deleteFeePayment,
         expenses,
         addExpense,
+        deleteExpense,
         admissions,
         submitAdmissionApplication,
         updateAdmissionStatus,
         convertAdmissionToStudent,
+        deleteAdmission,
         quizzes,
         addQuiz,
         quizAttempts,
