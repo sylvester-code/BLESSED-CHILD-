@@ -16,16 +16,12 @@ export const AdminHeader = () => {
 
   return (
     <header className="bg-white/90 backdrop-blur-md border-b border-slate-200/80 h-14 flex items-center justify-between px-6 sticky top-0 z-30 transition-all">
-      {/* Left: Clean Brand & Console Title */}
-      <div className="flex items-center space-x-3">
-        <div className="flex items-center space-x-2">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
-          <h1 className="text-sm font-bold text-slate-800 tracking-tight">
-            {settings.schoolName}
-          </h1>
-        </div>
-        <span className="text-slate-300">/</span>
-        <span className="text-xs font-medium text-slate-500">Admin Console</span>
+      {/* Left: Clean School Name */}
+      <div className="flex items-center space-x-2">
+        <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
+        <h1 className="text-sm font-bold text-slate-800 tracking-tight">
+          {settings.schoolName}
+        </h1>
       </div>
 
       {/* Right: Date Indicator & Minimal Logout */}

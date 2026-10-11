@@ -12,9 +12,7 @@ import {
   Phone,
   Mail,
   MapPin,
-  ArrowRight,
-  Sparkles,
-  Lock
+  ArrowRight
 } from 'lucide-react';
 
 export const Navbar = () => {
@@ -57,17 +55,10 @@ export const Navbar = () => {
             </span>
           </div>
 
-          <div className="flex items-center space-x-4">
-            <span className="text-[11px] text-amber-300/80 font-medium italic hidden lg:inline">
+          <div className="flex items-center">
+            <span className="text-[11px] text-amber-300/80 font-medium italic hidden sm:inline">
               &ldquo;{settings.schoolMotto}&rdquo;
             </span>
-            <Link 
-              href="/admin-portal" 
-              className="inline-flex items-center text-amber-300 hover:text-white transition-colors text-[11px] font-semibold bg-white/5 hover:bg-white/10 px-2.5 py-0.5 rounded-lg border border-white/10"
-            >
-              <Lock className="w-2.5 h-2.5 mr-1.5" />
-              Admin Portal
-            </Link>
           </div>
         </div>
       </div>
@@ -153,20 +144,13 @@ export const Navbar = () => {
             ))}
           </div>
 
-          <div className="pt-3 border-t border-slate-100 space-y-2">
+          <div className="pt-3 border-t border-slate-100">
             <Link
               href="/admissions"
               onClick={() => setMobileMenuOpen(false)}
               className="w-full text-center py-3 px-4 rounded-xl btn-gold-glow font-black text-xs shadow-md block"
             >
               Apply for Admission
-            </Link>
-            <Link
-              href="/admin-portal"
-              onClick={() => setMobileMenuOpen(false)}
-              className="w-full text-center py-2.5 px-4 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs hover:bg-slate-200 block"
-            >
-              Staff & Admin Portal
             </Link>
           </div>
         </div>

@@ -343,7 +343,7 @@ export default function AdminPortalLayout({
             <Menu className="w-5 h-5" />
           </button>
           <span className="font-bold text-xs text-school-navy-950">
-            Super Admin Control Center
+            {settings.schoolName}
           </span>
           <div className="w-5"></div>
         </div>
