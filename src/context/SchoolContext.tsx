@@ -358,20 +358,59 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(false);
   const [activeTeacher, setActiveTeacher] = useState<Teacher | null>(null);
 
-  // Load from localStorage on client mount
+  // Helper to filter out any student or teacher accounts unless created by Super Admin
+  const filterAuthorizedUsers = (userList: User[], teacherList: Teacher[]): User[] => {
+    return userList.filter(u => {
+      if (u.role === 'TEACHER') {
+        return (
+          u.createdBy === 'SUPER_ADMIN' ||
+          (u.linkedTeacherId && teacherList.some(t => t.id === u.linkedTeacherId))
+        );
+      }
+      if (u.role === 'STUDENT') {
+        return u.createdBy === 'SUPER_ADMIN';
+      }
+      return true;
+    });
+  };
+
+  // Live Server Sync helper
+  const syncServer = (payload: {
+    settings?: Partial<SiteSettings>;
+    announcements?: SchoolAnnouncement[];
+    teachers?: Teacher[];
+    students?: Student[];
+    users?: User[];
+  }) => {
+    try {
+      fetch('/api/school-data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).catch(() => {});
+    } catch {
+      // ignore
+    }
+  };
+
+  // Load from localStorage on client mount & sync authoritative data from server
   useEffect(() => {
     setIsClient(true);
+    let loadedTeachers: Teacher[] = [];
+
     try {
-      // Invalidate legacy cached data containing previous student or teacher names
+      // Purge any legacy cached data containing previous student or teacher names
       const storageVersion = localStorage.getItem('blessed_clean_version');
-      if (storageVersion !== 'v4_clean') {
+      if (storageVersion !== 'v5_super_admin_only_accounts') {
         localStorage.removeItem('blessed_students');
         localStorage.removeItem('blessed_teachers');
         localStorage.removeItem('blessed_parents');
         localStorage.removeItem('blessed_scores');
         localStorage.removeItem('blessed_payments');
         localStorage.removeItem('blessed_attendance');
-        localStorage.setItem('blessed_clean_version', 'v4_clean');
+        localStorage.removeItem('blessed_users');
+        localStorage.removeItem('blessed_active_teacher');
+        localStorage.setItem('blessed_clean_version', 'v5_super_admin_only_accounts');
       }
 
       const storedCreds = localStorage.getItem('blessed_admin_creds');
@@ -383,17 +422,28 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       const storedSettings = localStorage.getItem('blessed_settings');
       if (storedSettings) setSettings(JSON.parse(storedSettings));
 
-      const storedUser = localStorage.getItem('blessed_user');
-      if (storedUser) setCurrentUser(JSON.parse(storedUser));
-
-      const storedUsers = localStorage.getItem('blessed_users');
-      if (storedUsers) setUsers(JSON.parse(storedUsers));
+      const storedTeachers = localStorage.getItem('blessed_teachers');
+      if (storedTeachers) {
+        loadedTeachers = JSON.parse(storedTeachers);
+        setTeachers(loadedTeachers);
+      }
 
       const storedStudents = localStorage.getItem('blessed_students');
       if (storedStudents) setStudents(JSON.parse(storedStudents));
 
-      const storedTeachers = localStorage.getItem('blessed_teachers');
-      if (storedTeachers) setTeachers(JSON.parse(storedTeachers));
+      const storedUsers = localStorage.getItem('blessed_users');
+      if (storedUsers) {
+        const parsedUsers = JSON.parse(storedUsers);
+        setUsers(filterAuthorizedUsers(parsedUsers, loadedTeachers));
+      }
+
+      const storedUser = localStorage.getItem('blessed_user');
+      if (storedUser) {
+        const parsedU = JSON.parse(storedUser);
+        if (parsedU.role !== 'TEACHER' && parsedU.role !== 'STUDENT') {
+          setCurrentUser(parsedU);
+        }
+      }
 
       const storedPrefects = localStorage.getItem('blessed_prefects');
       if (storedPrefects) setPrefects(JSON.parse(storedPrefects));
@@ -412,6 +462,24 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     } catch {
       // ignore
     }
+
+    // Fetch authoritative live data from server so changes by Super Admin stay across all devices
+    fetch('/api/school-data')
+      .then(res => res.json())
+      .then(data => {
+        if (!data) return;
+        if (data.settings) setSettings(prev => ({ ...prev, ...data.settings }));
+        if (Array.isArray(data.announcements)) setAnnouncements(data.announcements);
+        if (Array.isArray(data.teachers)) {
+          setTeachers(data.teachers);
+          loadedTeachers = data.teachers;
+        }
+        if (Array.isArray(data.students)) setStudents(data.students);
+        if (Array.isArray(data.users)) {
+          setUsers(filterAuthorizedUsers(data.users, loadedTeachers));
+        }
+      })
+      .catch(() => {});
   }, []);
 
   // Save to localStorage when critical items update
@@ -505,8 +573,8 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     if (matchingUser) {
       setCurrentUser(matchingUser);
       logAuditEvent('Users & Roles', `Switched active session to role ${role} (${matchingUser.name})`);
-    } else {
-      // create temporary user for this role
+    } else if (role !== 'TEACHER' && role !== 'STUDENT') {
+      // create temporary user only for non-faculty/non-student roles
       const tempUser: User = {
         id: `usr-role-${role.toLowerCase()}`,
         name: `${role.replace('_', ' ')} Demo User`,
@@ -525,15 +593,24 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const newUser: User = {
       ...userData,
       id: `usr-${Date.now()}`,
+      createdBy: 'SUPER_ADMIN',
       createdAt: new Date().toISOString().split('T')[0]
     };
-    setUsers(prev => [newUser, ...prev]);
+    setUsers(prev => {
+      const updated = [newUser, ...prev];
+      syncServer({ users: updated });
+      return updated;
+    });
     logAuditEvent('Users & Roles', `Super Administrator registered user ${newUser.name} with role ${newUser.role} (Username: ${newUser.username})`);
     return newUser;
   };
 
   const updateUser = (id: string, updates: Partial<User>) => {
-    setUsers(prev => prev.map(u => u.id === id ? { ...u, ...updates } : u));
+    setUsers(prev => {
+      const updated = prev.map(u => u.id === id ? { ...u, ...updates } : u);
+      syncServer({ users: updated });
+      return updated;
+    });
     if (currentUser.id === id) {
       setCurrentUser(prev => ({ ...prev, ...updates }));
     }
@@ -541,13 +618,17 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const updateUserRole = (id: string, newRole: UserRole) => {
-    setUsers(prev => prev.map(u => {
-      if (u.id === id) {
-        logAuditEvent('Users & Roles', `Super Administrator reassigned role for ${u.name} from ${u.role} to ${newRole}`);
-        return { ...u, role: newRole };
-      }
-      return u;
-    }));
+    setUsers(prev => {
+      const updated = prev.map(u => {
+        if (u.id === id) {
+          logAuditEvent('Users & Roles', `Super Administrator reassigned role for ${u.name} from ${u.role} to ${newRole}`);
+          return { ...u, role: newRole };
+        }
+        return u;
+      });
+      syncServer({ users: updated });
+      return updated;
+    });
     if (currentUser.id === id) {
       setCurrentUser(prev => ({ ...prev, role: newRole }));
     }
@@ -555,7 +636,11 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const deleteUser = (id: string) => {
     const target = users.find(u => u.id === id);
-    setUsers(prev => prev.filter(u => u.id !== id));
+    setUsers(prev => {
+      const updated = prev.filter(u => u.id !== id);
+      syncServer({ users: updated });
+      return updated;
+    });
     logAuditEvent('Users & Roles', `Super Administrator removed user account ${target?.name || id}`);
   };
 
@@ -732,29 +817,45 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       id: `std-${Date.now()}`,
       admissionNo
     };
-    setStudents(prev => [newStudent, ...prev]);
+    setStudents(prev => {
+      const updated = [newStudent, ...prev];
+      syncServer({ students: updated });
+      return updated;
+    });
     logAuditEvent('Students', `Admitted new student ${newStudent.firstName} ${newStudent.lastName} (${admissionNo})`, admissionNo);
     return newStudent;
   };
 
   const updateStudent = (id: string, updates: Partial<Student>) => {
-    setStudents(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s));
+    setStudents(prev => {
+      const updated = prev.map(s => s.id === id ? { ...s, ...updates } : s);
+      syncServer({ students: updated });
+      return updated;
+    });
     logAuditEvent('Students', `Updated student profile information`, id);
   };
 
   const deleteStudent = (id: string) => {
-    setStudents(prev => prev.filter(s => s.id !== id));
+    setStudents(prev => {
+      const updated = prev.filter(s => s.id !== id);
+      syncServer({ students: updated });
+      return updated;
+    });
     logAuditEvent('Students', `Removed student record`, id);
   };
 
   const promoteStudent = (id: string, toClassId: string) => {
     const targetClass = classes.find(c => c.id === toClassId);
-    setStudents(prev => prev.map(s => {
-      if (s.id === id) {
-        return { ...s, classId: toClassId };
-      }
-      return s;
-    }));
+    setStudents(prev => {
+      const updated = prev.map(s => {
+        if (s.id === id) {
+          return { ...s, classId: toClassId };
+        }
+        return s;
+      });
+      syncServer({ students: updated });
+      return updated;
+    });
     logAuditEvent('Students', `Promoted student to ${targetClass?.name || toClassId}`, id);
   };
 
@@ -771,9 +872,8 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       username: cleanUsername,
       password: cleanPassword
     };
-    setTeachers(prev => [newTeacher, ...prev]);
 
-    // Create user record for teacher
+    // Create user record for teacher created by Super Admin
     const teacherUser: User = {
       id: `usr-tch-${newTeacher.id}`,
       name: newTeacher.fullName,
@@ -783,36 +883,60 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       password: cleanPassword,
       phone: newTeacher.phone,
       linkedTeacherId: newTeacher.id,
+      createdBy: 'SUPER_ADMIN',
       createdAt: new Date().toISOString().split('T')[0]
     };
-    setUsers(prev => [teacherUser, ...prev]);
+
+    setTeachers(prevTeachers => {
+      const updatedTeachers = [newTeacher, ...prevTeachers];
+      setUsers(prevUsers => {
+        const updatedUsers = [teacherUser, ...prevUsers];
+        syncServer({ teachers: updatedTeachers, users: updatedUsers });
+        return updatedUsers;
+      });
+      return updatedTeachers;
+    });
 
     logAuditEvent('Users & Roles', `Added faculty member ${newTeacher.fullName} (${staffId}) with login: ${cleanUsername}`, staffId);
     return newTeacher;
   };
 
   const updateTeacher = (id: string, updates: Partial<Teacher>) => {
-    setTeachers(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
-    setUsers(prev => prev.map(u => {
-      if (u.linkedTeacherId === id) {
-        return {
-          ...u,
-          name: updates.fullName || u.name,
-          username: updates.username || u.username,
-          password: updates.password || u.password,
-          email: updates.email || u.email,
-          phone: updates.phone || u.phone
-        };
-      }
-      return u;
-    }));
+    setTeachers(prevTeachers => {
+      const updatedTeachers = prevTeachers.map(t => t.id === id ? { ...t, ...updates } : t);
+      setUsers(prevUsers => {
+        const updatedUsers = prevUsers.map(u => {
+          if (u.linkedTeacherId === id) {
+            return {
+              ...u,
+              name: updates.fullName || u.name,
+              username: updates.username || u.username,
+              password: updates.password || u.password,
+              email: updates.email || u.email,
+              phone: updates.phone || u.phone
+            };
+          }
+          return u;
+        });
+        syncServer({ teachers: updatedTeachers, users: updatedUsers });
+        return updatedUsers;
+      });
+      return updatedTeachers;
+    });
     setActiveTeacher(prev => prev?.id === id ? { ...prev, ...updates } : prev);
     logAuditEvent('Users & Roles', `Updated teacher profile & class allocations`, id);
   };
 
   const deleteTeacher = (id: string) => {
-    setTeachers(prev => prev.filter(t => t.id !== id));
-    setUsers(prev => prev.filter(u => u.linkedTeacherId !== id));
+    setTeachers(prevTeachers => {
+      const updatedTeachers = prevTeachers.filter(t => t.id !== id);
+      setUsers(prevUsers => {
+        const updatedUsers = prevUsers.filter(u => u.linkedTeacherId !== id);
+        syncServer({ teachers: updatedTeachers, users: updatedUsers });
+        return updatedUsers;
+      });
+      return updatedTeachers;
+    });
     if (activeTeacher?.id === id) {
       setActiveTeacher(null);
       if (typeof window !== 'undefined') {

@@ -24,6 +24,7 @@ export interface User {
   linkedParentId?: string;
   linkedTeacherId?: string;
   createdAt: string;
+  createdBy?: string; // Tracks creator (e.g. 'SUPER_ADMIN')
 }
 
 export interface Student {

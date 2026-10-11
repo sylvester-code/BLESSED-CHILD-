@@ -187,27 +187,35 @@ export default function AboutPage() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {teachers.map((t) => (
-                <div key={t.id} className="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-md transition-all">
-                  <div className="h-56 bg-slate-100 relative">
-                    <img
-                      src={t.photoUrl || "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=300&q=80"}
-                      alt={t.fullName}
-                      className="w-full h-full object-cover"
-                    />
+            {teachers.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {teachers.map((t) => (
+                  <div key={t.id} className="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-md transition-all">
+                    <div className="h-56 bg-slate-100 relative">
+                      <img
+                        src={t.photoUrl || "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=300&q=80"}
+                        alt={t.fullName}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="p-5">
+                      <span className="text-[10px] font-bold tracking-wider uppercase text-amber-700 bg-amber-50 px-2 py-0.5 rounded">
+                        {t.staffId}
+                      </span>
+                      <h3 className="font-bold text-slate-900 text-base mt-1">{t.fullName}</h3>
+                      <p className="text-xs text-school-navy-900 font-semibold mt-0.5">{t.specialization}</p>
+                      <p className="text-[11px] text-slate-500 mt-2 line-clamp-2">{t.qualification}</p>
+                    </div>
                   </div>
-                  <div className="p-5">
-                    <span className="text-[10px] font-bold tracking-wider uppercase text-amber-700 bg-amber-50 px-2 py-0.5 rounded">
-                      {t.staffId}
-                    </span>
-                    <h3 className="font-bold text-slate-900 text-base mt-1">{t.fullName}</h3>
-                    <p className="text-xs text-school-navy-900 font-semibold mt-0.5">{t.specialization}</p>
-                    <p className="text-[11px] text-slate-500 mt-2 line-clamp-2">{t.qualification}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="p-8 text-center bg-white rounded-2xl border border-slate-200 shadow-sm max-w-xl mx-auto">
+                <p className="text-slate-600 text-sm font-medium">
+                  Faculty directory and instructor profiles are managed and updated by the School Administration.
+                </p>
+              </div>
+            )}
 
             <div className="text-center mt-12">
               <Link
