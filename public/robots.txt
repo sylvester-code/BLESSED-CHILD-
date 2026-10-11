@@ -1,0 +1,3 @@
+# Blessed Child School Complex
+User-agent: *
+Allow: /
