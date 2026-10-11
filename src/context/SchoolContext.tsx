@@ -99,6 +99,7 @@ interface SchoolContextType {
   // Parents
   parents: Parent[];
   addParent: (parent: Omit<Parent, 'id'>) => Parent;
+  deleteParent: (id: string) => void;
 
   // School Prefects
   prefects: SchoolPrefect[];
@@ -114,6 +115,7 @@ interface SchoolContextType {
   subjects: Subject[];
   addSubject: (sub: Omit<Subject, 'id'>) => Subject;
   updateSubject: (id: string, updates: Partial<Subject>) => void;
+  deleteSubject: (id: string) => void;
 
   // Attendance
   attendance: AttendanceRecord[];
@@ -145,24 +147,29 @@ interface SchoolContextType {
   // Quizzes & Online CBT
   quizzes: OnlineQuiz[];
   addQuiz: (quiz: Omit<OnlineQuiz, 'id'>) => OnlineQuiz;
+  deleteQuiz: (id: string) => void;
   quizAttempts: QuizAttempt[];
   submitQuizAttempt: (attempt: Omit<QuizAttempt, 'id' | 'submittedAt'>) => QuizAttempt;
 
   // Homework & Materials
   homework: HomeworkAssignment[];
   addHomework: (hw: Omit<HomeworkAssignment, 'id'>) => HomeworkAssignment;
+  deleteHomework: (id: string) => void;
   homeworkSubmissions: HomeworkSubmission[];
   submitHomework: (submission: Omit<HomeworkSubmission, 'id' | 'submittedAt'>) => HomeworkSubmission;
   gradeHomework: (submissionId: string, score: number, feedback: string) => void;
   learningMaterials: LearningMaterial[];
   addLearningMaterial: (lm: Omit<LearningMaterial, 'id' | 'dateUploaded'>) => LearningMaterial;
+  deleteLearningMaterial: (id: string) => void;
 
   // Library & Inventory
   libraryBooks: LibraryBook[];
   borrowBook: (bookId: string, studentId: string) => void;
   returnBook: (bookId: string) => void;
+  deleteLibraryBook: (id: string) => void;
   inventory: InventoryItem[];
   addInventoryItem: (item: Omit<InventoryItem, 'id' | 'assetTag'>) => InventoryItem;
+  deleteInventoryItem: (id: string) => void;
 
   // Communication & Timetable
   announcements: SchoolAnnouncement[];
@@ -177,6 +184,9 @@ interface SchoolContextType {
   // Audit
   auditLogs: AuditLog[];
   logAuditEvent: (module: AuditLog['module'], action: string, recordAffected?: string) => void;
+
+  // Tombstones & State
+  deletedIds: string[];
 
   // Reset to demo
   resetToDemo: () => void;
@@ -380,6 +390,39 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   });
   const [activeTeacher, setActiveTeacher] = useState<Teacher | null>(null);
 
+  // Persistent Tombstone tracking of all deleted IDs across the entire system
+  const [deletedIds, setDeletedIds] = useState<string[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('blessed_deleted_ids');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed)) return parsed;
+        }
+      } catch {
+        // ignore
+      }
+    }
+    return [];
+  });
+
+  // Central deletion recorder: records IDs to persistent tombstones immediately
+  const recordDeletion = (idsToRecord: string | string[]) => {
+    const arr = (Array.isArray(idsToRecord) ? idsToRecord : [idsToRecord]).filter(Boolean);
+    if (arr.length === 0) return;
+    setDeletedIds(prev => {
+      const merged = Array.from(new Set([...prev, ...arr]));
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('blessed_deleted_ids', JSON.stringify(merged));
+        } catch {
+          // ignore
+        }
+      }
+      return merged;
+    });
+  };
+
   // Helper to filter out any student or teacher accounts unless created by Super Admin
   const filterAuthorizedUsers = (userList: User[], teacherList: Teacher[]): User[] => {
     return userList.filter(u => {
@@ -398,6 +441,7 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   // Live Server Sync helper
   const syncServer = (payload: {
+    deletedIds?: string[];
     settings?: Partial<SiteSettings>;
     announcements?: SchoolAnnouncement[];
     teachers?: Teacher[];
@@ -405,10 +449,18 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     parents?: Parent[];
     users?: User[];
     prefects?: SchoolPrefect[];
+    classes?: SchoolClass[];
+    subjects?: Subject[];
     feePayments?: FeePayment[];
     expenses?: ExpenseRecord[];
+    feeItems?: FeeItem[];
     admissions?: AdmissionApplication[];
     assessmentScores?: AssessmentScore[];
+    libraryBooks?: LibraryBook[];
+    inventory?: InventoryItem[];
+    quizzes?: OnlineQuiz[];
+    homework?: HomeworkAssignment[];
+    learningMaterials?: LearningMaterial[];
   }) => {
     try {
       fetch('/api/school-data', {
@@ -425,11 +477,26 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   useEffect(() => {
     setIsClient(true);
     let loadedTeachers: Teacher[] = [];
+    let localDeletedSet = new Set<string>();
 
     try {
-      // Clean slate migration: purge all cache from browser storage
+      // Load deleted IDs tombstones first
+      const storedDeleted = localStorage.getItem('blessed_deleted_ids');
+      if (storedDeleted) {
+        try {
+          const parsed = JSON.parse(storedDeleted);
+          if (Array.isArray(parsed)) {
+            localDeletedSet = new Set(parsed);
+            setDeletedIds(parsed);
+          }
+        } catch {
+          // ignore
+        }
+      }
+
+      // Clean slate migration
       const storageVersion = localStorage.getItem('blessed_clean_version');
-      if (storageVersion !== 'v9_clear_all_cache_and_static_layout') {
+      if (storageVersion !== 'v10_permanent_deletions_and_tombstones') {
         localStorage.removeItem('blessed_students');
         localStorage.removeItem('blessed_teachers');
         localStorage.removeItem('blessed_parents');
@@ -443,7 +510,7 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         localStorage.removeItem('blessed_active_teacher');
         localStorage.removeItem('blessed_settings');
         localStorage.setItem('blessed_admin_creds', JSON.stringify({ username: 'BLESSED', password: '2026' }));
-        localStorage.setItem('blessed_clean_version', 'v9_clear_all_cache_and_static_layout');
+        localStorage.setItem('blessed_clean_version', 'v10_permanent_deletions_and_tombstones');
         setAdminCreds({ username: 'BLESSED', password: '2026' });
         setStudents([]);
         setTeachers([]);
@@ -473,16 +540,24 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
       const storedTeachers = localStorage.getItem('blessed_teachers');
       if (storedTeachers) {
-        loadedTeachers = JSON.parse(storedTeachers);
-        setTeachers(loadedTeachers);
+        const parsedT = JSON.parse(storedTeachers).filter((t: Teacher) => !localDeletedSet.has(t.id));
+        loadedTeachers = parsedT;
+        setTeachers(parsedT);
       }
 
       const storedStudents = localStorage.getItem('blessed_students');
-      if (storedStudents) setStudents(JSON.parse(storedStudents));
+      if (storedStudents) {
+        setStudents(JSON.parse(storedStudents).filter((s: Student) => !localDeletedSet.has(s.id)));
+      }
+
+      const storedParents = localStorage.getItem('blessed_parents');
+      if (storedParents) {
+        setParents(JSON.parse(storedParents).filter((p: Parent) => !localDeletedSet.has(p.id)));
+      }
 
       const storedUsers = localStorage.getItem('blessed_users');
       if (storedUsers) {
-        const parsedUsers = JSON.parse(storedUsers);
+        const parsedUsers = JSON.parse(storedUsers).filter((u: User) => !localDeletedSet.has(u.id));
         setUsers(filterAuthorizedUsers(parsedUsers, loadedTeachers));
       }
 
@@ -495,46 +570,151 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       }
 
       const storedPrefects = localStorage.getItem('blessed_prefects');
-      if (storedPrefects) setPrefects(JSON.parse(storedPrefects));
+      if (storedPrefects) {
+        setPrefects(JSON.parse(storedPrefects).filter((p: SchoolPrefect) => !localDeletedSet.has(p.id)));
+      }
 
       const storedActiveTeacher = localStorage.getItem('blessed_active_teacher');
-      if (storedActiveTeacher) setActiveTeacher(JSON.parse(storedActiveTeacher));
+      if (storedActiveTeacher) {
+        const parsedActive = JSON.parse(storedActiveTeacher);
+        if (!localDeletedSet.has(parsedActive.id)) {
+          setActiveTeacher(parsedActive);
+        }
+      }
 
       const storedAdmissions = localStorage.getItem('blessed_admissions');
-      if (storedAdmissions) setAdmissions(JSON.parse(storedAdmissions));
+      if (storedAdmissions) {
+        setAdmissions(JSON.parse(storedAdmissions).filter((a: AdmissionApplication) => !localDeletedSet.has(a.id)));
+      }
 
       const storedScores = localStorage.getItem('blessed_scores');
-      if (storedScores) setAssessmentScores(JSON.parse(storedScores));
+      if (storedScores) {
+        setAssessmentScores(JSON.parse(storedScores).filter((sc: AssessmentScore) => !localDeletedSet.has(sc.id) && !localDeletedSet.has(sc.studentId)));
+      }
 
       const storedPayments = localStorage.getItem('blessed_payments');
-      if (storedPayments) setFeePayments(JSON.parse(storedPayments));
+      if (storedPayments) {
+        setFeePayments(JSON.parse(storedPayments).filter((fp: FeePayment) => !localDeletedSet.has(fp.id) && !localDeletedSet.has(fp.studentId)));
+      }
 
       const storedExpenses = localStorage.getItem('blessed_expenses');
-      if (storedExpenses) setExpenses(JSON.parse(storedExpenses));
+      if (storedExpenses) {
+        setExpenses(JSON.parse(storedExpenses).filter((e: ExpenseRecord) => !localDeletedSet.has(e.id)));
+      }
+
+      const storedClasses = localStorage.getItem('blessed_classes');
+      if (storedClasses) {
+        setClasses(JSON.parse(storedClasses).filter((c: SchoolClass) => !localDeletedSet.has(c.id)));
+      }
+
+      const storedSubjects = localStorage.getItem('blessed_subjects');
+      if (storedSubjects) {
+        setSubjects(JSON.parse(storedSubjects).filter((sub: Subject) => !localDeletedSet.has(sub.id)));
+      }
+
+      const storedFeeItems = localStorage.getItem('blessed_fee_items');
+      if (storedFeeItems) {
+        setFeeItems(JSON.parse(storedFeeItems).filter((f: FeeItem) => !localDeletedSet.has(f.id)));
+      }
+
+      const storedInventory = localStorage.getItem('blessed_inventory');
+      if (storedInventory) {
+        setInventory(JSON.parse(storedInventory).filter((i: InventoryItem) => !localDeletedSet.has(i.id)));
+      }
+
+      const storedLibraryBooks = localStorage.getItem('blessed_library_books');
+      if (storedLibraryBooks) {
+        setLibraryBooks(JSON.parse(storedLibraryBooks).filter((b: LibraryBook) => !localDeletedSet.has(b.id)));
+      }
+
+      const storedQuizzes = localStorage.getItem('blessed_quizzes');
+      if (storedQuizzes) {
+        setQuizzes(JSON.parse(storedQuizzes).filter((q: OnlineQuiz) => !localDeletedSet.has(q.id)));
+      }
+
+      const storedHomework = localStorage.getItem('blessed_homework');
+      if (storedHomework) {
+        setHomework(JSON.parse(storedHomework).filter((h: HomeworkAssignment) => !localDeletedSet.has(h.id)));
+      }
+
+      const storedMaterials = localStorage.getItem('blessed_learning_materials');
+      if (storedMaterials) {
+        setLearningMaterials(JSON.parse(storedMaterials).filter((m: LearningMaterial) => !localDeletedSet.has(m.id)));
+      }
     } catch {
       // ignore
     }
 
-    // Fetch authoritative live data from server so changes by Super Admin stay across all devices
+    // Fetch authoritative live data from server and apply tombstone filtering
     fetch('/api/school-data')
       .then(res => res.json())
       .then(data => {
         if (!data) return;
-        if (data.settings) setSettings(prev => ({ ...prev, ...data.settings }));
-        if (Array.isArray(data.announcements)) setAnnouncements(data.announcements);
-        if (Array.isArray(data.teachers)) {
-          setTeachers(data.teachers);
-          loadedTeachers = data.teachers;
+
+        // Combine server tombstones and client tombstones
+        const activeTombstone = new Set([
+          ...Array.from(localDeletedSet),
+          ...(Array.isArray(data.deletedIds) ? data.deletedIds : [])
+        ]);
+
+        if (activeTombstone.size > 0) {
+          const combinedArr = Array.from(activeTombstone);
+          setDeletedIds(combinedArr);
+          try {
+            localStorage.setItem('blessed_deleted_ids', JSON.stringify(combinedArr));
+          } catch {
+            // ignore
+          }
         }
-        if (Array.isArray(data.students)) setStudents(data.students);
-        if (Array.isArray(data.parents)) setParents(data.parents);
-        if (Array.isArray(data.prefects)) setPrefects(data.prefects);
-        if (Array.isArray(data.feePayments)) setFeePayments(data.feePayments);
-        if (Array.isArray(data.expenses)) setExpenses(data.expenses);
-        if (Array.isArray(data.admissions)) setAdmissions(data.admissions);
-        if (Array.isArray(data.assessmentScores)) setAssessmentScores(data.assessmentScores);
+
+        if (data.settings) setSettings(prev => ({ ...prev, ...data.settings }));
+        if (Array.isArray(data.announcements)) {
+          setAnnouncements(data.announcements.filter((a: SchoolAnnouncement) => !activeTombstone.has(a.id)));
+        }
+        if (Array.isArray(data.teachers)) {
+          const filteredT = data.teachers.filter((t: Teacher) => !activeTombstone.has(t.id));
+          setTeachers(filteredT);
+          loadedTeachers = filteredT;
+        }
+        if (Array.isArray(data.students)) {
+          setStudents(data.students.filter((s: Student) => !activeTombstone.has(s.id)));
+        }
+        if (Array.isArray(data.parents)) {
+          setParents(data.parents.filter((p: Parent) => !activeTombstone.has(p.id)));
+        }
+        if (Array.isArray(data.prefects)) {
+          setPrefects(data.prefects.filter((p: SchoolPrefect) => !activeTombstone.has(p.id)));
+        }
+        if (Array.isArray(data.feePayments)) {
+          setFeePayments(data.feePayments.filter((fp: FeePayment) => !activeTombstone.has(fp.id) && !activeTombstone.has(fp.studentId)));
+        }
+        if (Array.isArray(data.expenses)) {
+          setExpenses(data.expenses.filter((e: ExpenseRecord) => !activeTombstone.has(e.id)));
+        }
+        if (Array.isArray(data.admissions)) {
+          setAdmissions(data.admissions.filter((a: AdmissionApplication) => !activeTombstone.has(a.id)));
+        }
+        if (Array.isArray(data.assessmentScores)) {
+          setAssessmentScores(data.assessmentScores.filter((sc: AssessmentScore) => !activeTombstone.has(sc.id) && !activeTombstone.has(sc.studentId)));
+        }
+        if (Array.isArray(data.libraryBooks)) {
+          setLibraryBooks(data.libraryBooks.filter((b: LibraryBook) => !activeTombstone.has(b.id)));
+        }
+        if (Array.isArray(data.inventory)) {
+          setInventory(data.inventory.filter((i: InventoryItem) => !activeTombstone.has(i.id)));
+        }
+        if (Array.isArray(data.quizzes)) {
+          setQuizzes(data.quizzes.filter((q: OnlineQuiz) => !activeTombstone.has(q.id)));
+        }
+        if (Array.isArray(data.homework)) {
+          setHomework(data.homework.filter((h: HomeworkAssignment) => !activeTombstone.has(h.id)));
+        }
+        if (Array.isArray(data.learningMaterials)) {
+          setLearningMaterials(data.learningMaterials.filter((m: LearningMaterial) => !activeTombstone.has(m.id)));
+        }
         if (Array.isArray(data.users)) {
-          setUsers(filterAuthorizedUsers(data.users, loadedTeachers));
+          const filteredU = data.users.filter((u: User) => !activeTombstone.has(u.id) && (!u.linkedTeacherId || !activeTombstone.has(u.linkedTeacherId)));
+          setUsers(filterAuthorizedUsers(filteredU, loadedTeachers));
         }
       })
       .catch(() => {});
@@ -544,15 +724,25 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   useEffect(() => {
     if (!isClient) return;
     try {
+      localStorage.setItem('blessed_deleted_ids', JSON.stringify(deletedIds));
       localStorage.setItem('blessed_settings', JSON.stringify(settings));
       localStorage.setItem('blessed_users', JSON.stringify(users));
       localStorage.setItem('blessed_students', JSON.stringify(students));
       localStorage.setItem('blessed_teachers', JSON.stringify(teachers));
+      localStorage.setItem('blessed_parents', JSON.stringify(parents));
       localStorage.setItem('blessed_prefects', JSON.stringify(prefects));
+      localStorage.setItem('blessed_classes', JSON.stringify(classes));
+      localStorage.setItem('blessed_subjects', JSON.stringify(subjects));
+      localStorage.setItem('blessed_fee_items', JSON.stringify(feeItems));
       localStorage.setItem('blessed_admissions', JSON.stringify(admissions));
       localStorage.setItem('blessed_scores', JSON.stringify(assessmentScores));
       localStorage.setItem('blessed_payments', JSON.stringify(feePayments));
       localStorage.setItem('blessed_expenses', JSON.stringify(expenses));
+      localStorage.setItem('blessed_library_books', JSON.stringify(libraryBooks));
+      localStorage.setItem('blessed_inventory', JSON.stringify(inventory));
+      localStorage.setItem('blessed_quizzes', JSON.stringify(quizzes));
+      localStorage.setItem('blessed_homework', JSON.stringify(homework));
+      localStorage.setItem('blessed_learning_materials', JSON.stringify(learningMaterials));
       localStorage.setItem('blessed_user', JSON.stringify(currentUser));
       localStorage.setItem('blessed_admin_creds', JSON.stringify(adminCreds));
       if (activeTeacher) {
@@ -563,21 +753,56 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
       // Automatically sync live to server
       syncServer({
+        deletedIds,
         settings,
         users,
         students,
         teachers,
+        parents,
         prefects,
+        classes,
+        subjects,
+        feeItems,
         admissions,
         feePayments,
         expenses,
         assessmentScores,
-        announcements
+        announcements,
+        libraryBooks,
+        inventory,
+        quizzes,
+        homework,
+        learningMaterials
       });
     } catch {
       // ignore
     }
-  }, [settings, users, students, teachers, prefects, admissions, assessmentScores, feePayments, expenses, announcements, currentUser, adminCreds, activeTeacher, isClient]);
+  }, [
+    deletedIds,
+    settings,
+    users,
+    students,
+    teachers,
+    parents,
+    prefects,
+    classes,
+    subjects,
+    feeItems,
+    admissions,
+    assessmentScores,
+    feePayments,
+    expenses,
+    libraryBooks,
+    inventory,
+    quizzes,
+    homework,
+    learningMaterials,
+    announcements,
+    currentUser,
+    adminCreds,
+    activeTeacher,
+    isClient
+  ]);
 
   // Dynamically apply Theme CSS Variables and Document Title on mount & updates
   useEffect(() => {
@@ -709,9 +934,15 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const deleteUser = (id: string) => {
     const target = users.find(u => u.id === id);
+    recordDeletion(id);
     setUsers(prev => {
       const updated = prev.filter(u => u.id !== id);
-      syncServer({ users: updated });
+      try {
+        localStorage.setItem('blessed_users', JSON.stringify(updated));
+      } catch {
+        // ignore
+      }
+      syncServer({ deletedIds: [id], users: updated });
       return updated;
     });
     logAuditEvent('Users & Roles', `Super Administrator removed user account ${target?.name || id}`);
@@ -939,12 +1170,24 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const deleteStudent = (id: string) => {
+    recordDeletion(id);
     setStudents(prev => {
       const updated = prev.filter(s => s.id !== id);
-      syncServer({ students: updated });
+      try { localStorage.setItem('blessed_students', JSON.stringify(updated)); } catch {}
       return updated;
     });
-    logAuditEvent('Students', `Removed student record`, id);
+    setAssessmentScores(prev => {
+      const updated = prev.filter(sc => sc.studentId !== id);
+      try { localStorage.setItem('blessed_scores', JSON.stringify(updated)); } catch {}
+      return updated;
+    });
+    setFeePayments(prev => {
+      const updated = prev.filter(fp => fp.studentId !== id);
+      try { localStorage.setItem('blessed_payments', JSON.stringify(updated)); } catch {}
+      return updated;
+    });
+    syncServer({ deletedIds: [id] });
+    logAuditEvent('Students', `Permanently removed student record`, id);
   };
 
   const promoteStudent = (id: string, toClassId: string) => {
@@ -1031,11 +1274,17 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const deleteTeacher = (id: string) => {
+    const linkedUserIds = users.filter(u => u.linkedTeacherId === id || u.id === `usr-tch-${id}`).map(u => u.id);
+    const allIdsToDelete = [id, ...linkedUserIds];
+    recordDeletion(allIdsToDelete);
+
     setTeachers(prevTeachers => {
       const updatedTeachers = prevTeachers.filter(t => t.id !== id);
+      try { localStorage.setItem('blessed_teachers', JSON.stringify(updatedTeachers)); } catch {}
       setUsers(prevUsers => {
-        const updatedUsers = prevUsers.filter(u => u.linkedTeacherId !== id);
-        syncServer({ teachers: updatedTeachers, users: updatedUsers });
+        const updatedUsers = prevUsers.filter(u => u.linkedTeacherId !== id && u.id !== `usr-tch-${id}`);
+        try { localStorage.setItem('blessed_users', JSON.stringify(updatedUsers)); } catch {}
+        syncServer({ deletedIds: allIdsToDelete, teachers: updatedTeachers, users: updatedUsers });
         return updatedUsers;
       });
       return updatedTeachers;
@@ -1046,7 +1295,7 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         localStorage.removeItem('blessed_active_teacher');
       }
     }
-    logAuditEvent('Users & Roles', `Removed faculty member`, id);
+    logAuditEvent('Users & Roles', `Permanently removed faculty member`, id);
   };
 
   const loginTeacher = (usernameInput: string, passwordInput: string): { success: boolean; teacher?: Teacher; error?: string } => {
@@ -1101,9 +1350,25 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       ...parentData,
       id: `prt-${Date.now()}`
     };
-    setParents(prev => [newParent, ...prev]);
+    setParents(prev => {
+      const updated = [newParent, ...prev];
+      try { localStorage.setItem('blessed_parents', JSON.stringify(updated)); } catch {}
+      syncServer({ parents: updated });
+      return updated;
+    });
     logAuditEvent('Users & Roles', `Added parent/guardian record ${newParent.fullName}`, newParent.id);
     return newParent;
+  };
+
+  const deleteParent = (id: string) => {
+    recordDeletion(id);
+    setParents(prev => {
+      const updated = prev.filter(p => p.id !== id);
+      try { localStorage.setItem('blessed_parents', JSON.stringify(updated)); } catch {}
+      syncServer({ deletedIds: [id], parents: updated });
+      return updated;
+    });
+    logAuditEvent('Users & Roles', `Permanently removed parent record`, id);
   };
 
   const addPrefect = (prefectData: Omit<SchoolPrefect, 'id'>): SchoolPrefect => {
@@ -1111,19 +1376,35 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       ...prefectData,
       id: `prf-${Date.now()}`
     };
-    setPrefects(prev => [newPrefect, ...prev]);
+    setPrefects(prev => {
+      const updated = [newPrefect, ...prev];
+      try { localStorage.setItem('blessed_prefects', JSON.stringify(updated)); } catch {}
+      syncServer({ prefects: updated });
+      return updated;
+    });
     logAuditEvent('Settings', `Added school prefect ${newPrefect.fullName} (${newPrefect.role})`, newPrefect.id);
     return newPrefect;
   };
 
   const updatePrefect = (id: string, updates: Partial<SchoolPrefect>) => {
-    setPrefects(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
+    setPrefects(prev => {
+      const updated = prev.map(p => p.id === id ? { ...p, ...updates } : p);
+      try { localStorage.setItem('blessed_prefects', JSON.stringify(updated)); } catch {}
+      syncServer({ prefects: updated });
+      return updated;
+    });
     logAuditEvent('Settings', `Updated prefect profile information`, id);
   };
 
   const deletePrefect = (id: string) => {
-    setPrefects(prev => prev.filter(p => p.id !== id));
-    logAuditEvent('Settings', `Removed school prefect record`, id);
+    recordDeletion(id);
+    setPrefects(prev => {
+      const updated = prev.filter(p => p.id !== id);
+      try { localStorage.setItem('blessed_prefects', JSON.stringify(updated)); } catch {}
+      syncServer({ deletedIds: [id], prefects: updated });
+      return updated;
+    });
+    logAuditEvent('Settings', `Permanently removed school prefect record`, id);
   };
 
   const addClass = (clsData: Omit<SchoolClass, 'id'>): SchoolClass => {
@@ -1131,19 +1412,35 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       ...clsData,
       id: `cls-${Date.now()}`
     };
-    setClasses(prev => [...prev, newClass]);
+    setClasses(prev => {
+      const updated = [...prev, newClass];
+      try { localStorage.setItem('blessed_classes', JSON.stringify(updated)); } catch {}
+      syncServer({ classes: updated });
+      return updated;
+    });
     logAuditEvent('Academics', `Created new academic class ${newClass.name}`, newClass.id);
     return newClass;
   };
 
   const updateClass = (id: string, updates: Partial<SchoolClass>) => {
-    setClasses(prev => prev.map(c => c.id === id ? { ...c, ...updates } : c));
+    setClasses(prev => {
+      const updated = prev.map(c => c.id === id ? { ...c, ...updates } : c);
+      try { localStorage.setItem('blessed_classes', JSON.stringify(updated)); } catch {}
+      syncServer({ classes: updated });
+      return updated;
+    });
     logAuditEvent('Academics', `Updated class structure`, id);
   };
 
   const deleteClass = (id: string) => {
-    setClasses(prev => prev.filter(c => c.id !== id));
-    logAuditEvent('Academics', `Removed academic class`, id);
+    recordDeletion(id);
+    setClasses(prev => {
+      const updated = prev.filter(c => c.id !== id);
+      try { localStorage.setItem('blessed_classes', JSON.stringify(updated)); } catch {}
+      syncServer({ deletedIds: [id], classes: updated });
+      return updated;
+    });
+    logAuditEvent('Academics', `Permanently removed academic class`, id);
   };
 
   const addSubject = (subData: Omit<Subject, 'id'>): Subject => {
@@ -1151,14 +1448,35 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       ...subData,
       id: `sub-${Date.now()}`
     };
-    setSubjects(prev => [...prev, newSubject]);
+    setSubjects(prev => {
+      const updated = [...prev, newSubject];
+      try { localStorage.setItem('blessed_subjects', JSON.stringify(updated)); } catch {}
+      syncServer({ subjects: updated });
+      return updated;
+    });
     logAuditEvent('Academics', `Added curriculum subject ${newSubject.name}`, newSubject.id);
     return newSubject;
   };
 
   const updateSubject = (id: string, updates: Partial<Subject>) => {
-    setSubjects(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s));
+    setSubjects(prev => {
+      const updated = prev.map(s => s.id === id ? { ...s, ...updates } : s);
+      try { localStorage.setItem('blessed_subjects', JSON.stringify(updated)); } catch {}
+      syncServer({ subjects: updated });
+      return updated;
+    });
     logAuditEvent('Academics', `Updated curriculum subject details`, id);
+  };
+
+  const deleteSubject = (id: string) => {
+    recordDeletion(id);
+    setSubjects(prev => {
+      const updated = prev.filter(s => s.id !== id);
+      try { localStorage.setItem('blessed_subjects', JSON.stringify(updated)); } catch {}
+      syncServer({ deletedIds: [id], subjects: updated });
+      return updated;
+    });
+    logAuditEvent('Academics', `Permanently removed curriculum subject`, id);
   };
 
   const markAttendance = (classId: string, date: string, records: { studentId: string; status: 'Present' | 'Absent' | 'Late' | 'Excused' }[]) => {
@@ -1387,42 +1705,70 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const deleteAdmission = (id: string) => {
+    recordDeletion(id);
     setAdmissions(prev => {
       const updated = prev.filter(a => a.id !== id);
-      syncServer({ admissions: updated });
+      try { localStorage.setItem('blessed_admissions', JSON.stringify(updated)); } catch {}
+      syncServer({ deletedIds: [id], admissions: updated });
       return updated;
     });
-    logAuditEvent('Admissions', `Deleted admission application ID: ${id}`);
+    logAuditEvent('Admissions', `Permanently deleted admission application ID: ${id}`);
   };
 
   const deleteExpense = (id: string) => {
+    recordDeletion(id);
     setExpenses(prev => {
       const updated = prev.filter(e => e.id !== id);
-      syncServer({ expenses: updated });
+      try { localStorage.setItem('blessed_expenses', JSON.stringify(updated)); } catch {}
+      syncServer({ deletedIds: [id], expenses: updated });
       return updated;
     });
-    logAuditEvent('Fees', `Deleted expense record ID: ${id}`);
+    logAuditEvent('Fees', `Permanently deleted expense record ID: ${id}`);
   };
 
   const deleteFeePayment = (id: string) => {
+    recordDeletion(id);
     setFeePayments(prev => {
       const updated = prev.filter(p => p.id !== id);
-      syncServer({ feePayments: updated });
+      try { localStorage.setItem('blessed_payments', JSON.stringify(updated)); } catch {}
+      syncServer({ deletedIds: [id], feePayments: updated });
       return updated;
     });
-    logAuditEvent('Fees', `Deleted fee payment receipt ID: ${id}`);
+    logAuditEvent('Fees', `Permanently deleted fee payment receipt ID: ${id}`);
   };
 
   const deleteFeeItem = (id: string) => {
-    setFeeItems(prev => prev.filter(f => f.id !== id));
-    logAuditEvent('Fees', `Deleted fee item ID: ${id}`);
+    recordDeletion(id);
+    setFeeItems(prev => {
+      const updated = prev.filter(f => f.id !== id);
+      try { localStorage.setItem('blessed_fee_items', JSON.stringify(updated)); } catch {}
+      syncServer({ deletedIds: [id], feeItems: updated });
+      return updated;
+    });
+    logAuditEvent('Fees', `Permanently deleted fee item ID: ${id}`);
   };
 
   const addQuiz = (quizData: Omit<OnlineQuiz, 'id'>): OnlineQuiz => {
     const newQuiz: OnlineQuiz = { ...quizData, id: `qz-${Date.now()}` };
-    setQuizzes(prev => [newQuiz, ...prev]);
+    setQuizzes(prev => {
+      const updated = [newQuiz, ...prev];
+      try { localStorage.setItem('blessed_quizzes', JSON.stringify(updated)); } catch {}
+      syncServer({ quizzes: updated });
+      return updated;
+    });
     logAuditEvent('Assessments', `Created online quiz assessment: ${newQuiz.title}`);
     return newQuiz;
+  };
+
+  const deleteQuiz = (id: string) => {
+    recordDeletion(id);
+    setQuizzes(prev => {
+      const updated = prev.filter(q => q.id !== id);
+      try { localStorage.setItem('blessed_quizzes', JSON.stringify(updated)); } catch {}
+      syncServer({ deletedIds: [id], quizzes: updated });
+      return updated;
+    });
+    logAuditEvent('Assessments', `Permanently deleted online quiz assessment ID: ${id}`);
   };
 
   const submitQuizAttempt = (attemptData: Omit<QuizAttempt, 'id' | 'submittedAt'>): QuizAttempt => {
@@ -1438,9 +1784,25 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const addHomework = (hwData: Omit<HomeworkAssignment, 'id'>): HomeworkAssignment => {
     const newHw: HomeworkAssignment = { ...hwData, id: `hw-${Date.now()}` };
-    setHomework(prev => [newHw, ...prev]);
+    setHomework(prev => {
+      const updated = [newHw, ...prev];
+      try { localStorage.setItem('blessed_homework', JSON.stringify(updated)); } catch {}
+      syncServer({ homework: updated });
+      return updated;
+    });
     logAuditEvent('Assessments', `Posted homework assignment: ${newHw.title}`);
     return newHw;
+  };
+
+  const deleteHomework = (id: string) => {
+    recordDeletion(id);
+    setHomework(prev => {
+      const updated = prev.filter(h => h.id !== id);
+      try { localStorage.setItem('blessed_homework', JSON.stringify(updated)); } catch {}
+      syncServer({ deletedIds: [id], homework: updated });
+      return updated;
+    });
+    logAuditEvent('Assessments', `Permanently deleted homework assignment ID: ${id}`);
   };
 
   const submitHomework = (subData: Omit<HomeworkSubmission, 'id' | 'submittedAt'>): HomeworkSubmission => {
@@ -1465,9 +1827,25 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       id: `lm-${Date.now()}`,
       dateUploaded: new Date().toISOString().split('T')[0]
     };
-    setLearningMaterials(prev => [newLm, ...prev]);
+    setLearningMaterials(prev => {
+      const updated = [newLm, ...prev];
+      try { localStorage.setItem('blessed_learning_materials', JSON.stringify(updated)); } catch {}
+      syncServer({ learningMaterials: updated });
+      return updated;
+    });
     logAuditEvent('Academics', `Uploaded educational learning resource: ${newLm.title}`);
     return newLm;
+  };
+
+  const deleteLearningMaterial = (id: string) => {
+    recordDeletion(id);
+    setLearningMaterials(prev => {
+      const updated = prev.filter(m => m.id !== id);
+      try { localStorage.setItem('blessed_learning_materials', JSON.stringify(updated)); } catch {}
+      syncServer({ deletedIds: [id], learningMaterials: updated });
+      return updated;
+    });
+    logAuditEvent('Academics', `Permanently deleted learning material ID: ${id}`);
   };
 
   const borrowBook = (bookId: string, studentId: string) => {
@@ -1490,12 +1868,39 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     logAuditEvent('Academics', `Returned library book ${bookId}`);
   };
 
+  const deleteLibraryBook = (id: string) => {
+    recordDeletion(id);
+    setLibraryBooks(prev => {
+      const updated = prev.filter(b => b.id !== id);
+      try { localStorage.setItem('blessed_library_books', JSON.stringify(updated)); } catch {}
+      syncServer({ deletedIds: [id], libraryBooks: updated });
+      return updated;
+    });
+    logAuditEvent('Academics', `Permanently removed library catalog item ID: ${id}`);
+  };
+
   const addInventoryItem = (itemData: Omit<InventoryItem, 'id' | 'assetTag'>): InventoryItem => {
     const assetTag = `BCS-${itemData.category.substring(0, 3).toUpperCase()}-${Date.now().toString().slice(-4)}`;
     const newItem: InventoryItem = { ...itemData, id: `inv-${Date.now()}`, assetTag };
-    setInventory(prev => [newItem, ...prev]);
+    setInventory(prev => {
+      const updated = [newItem, ...prev];
+      try { localStorage.setItem('blessed_inventory', JSON.stringify(updated)); } catch {}
+      syncServer({ inventory: updated });
+      return updated;
+    });
     logAuditEvent('CMS', `Added school asset item: ${newItem.name} (${assetTag})`);
     return newItem;
+  };
+
+  const deleteInventoryItem = (id: string) => {
+    recordDeletion(id);
+    setInventory(prev => {
+      const updated = prev.filter(i => i.id !== id);
+      try { localStorage.setItem('blessed_inventory', JSON.stringify(updated)); } catch {}
+      syncServer({ deletedIds: [id], inventory: updated });
+      return updated;
+    });
+    logAuditEvent('CMS', `Permanently removed school asset item ID: ${id}`);
   };
 
   const addAnnouncement = (ancData: Omit<SchoolAnnouncement, 'id' | 'datePosted'>): SchoolAnnouncement => {
@@ -1506,7 +1911,6 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     };
     setAnnouncements(prev => {
       const updated = [newAnc, ...prev];
-      // Sync live so visitors see the new announcement instantly
       try {
         fetch('/api/school-data', {
           method: 'POST',
@@ -1521,18 +1925,19 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const deleteAnnouncement = (id: string) => {
+    recordDeletion(id);
     setAnnouncements(prev => {
       const updated = prev.filter(a => a.id !== id);
       try {
         fetch('/api/school-data', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ announcements: updated })
+          body: JSON.stringify({ deletedIds: [id], announcements: updated })
         }).catch(() => {});
       } catch { /* ignore */ }
       return updated;
     });
-    logAuditEvent('CMS', `Deleted announcement`, id);
+    logAuditEvent('CMS', `Permanently deleted announcement ID: ${id}`);
   };
 
   const sendMessage = (msgData: Omit<InternalMessage, 'id' | 'sentAt' | 'read'>): InternalMessage => {
@@ -1643,6 +2048,7 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         logoutTeacher,
         parents,
         addParent,
+        deleteParent,
         prefects,
         addPrefect,
         updatePrefect,
@@ -1654,6 +2060,7 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         subjects,
         addSubject,
         updateSubject,
+        deleteSubject,
         attendance,
         markAttendance,
         assessmentScores,
@@ -1675,20 +2082,25 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         deleteAdmission,
         quizzes,
         addQuiz,
+        deleteQuiz,
         quizAttempts,
         submitQuizAttempt,
         homework,
         addHomework,
+        deleteHomework,
         homeworkSubmissions,
         submitHomework,
         gradeHomework,
         learningMaterials,
         addLearningMaterial,
+        deleteLearningMaterial,
         libraryBooks,
         borrowBook,
         returnBook,
+        deleteLibraryBook,
         inventory,
         addInventoryItem,
+        deleteInventoryItem,
         announcements,
         addAnnouncement,
         deleteAnnouncement,
@@ -1699,6 +2111,7 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         addTimetableSlot,
         auditLogs,
         logAuditEvent,
+        deletedIds,
         resetToDemo
       }}
     >

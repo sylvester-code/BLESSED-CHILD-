@@ -81,6 +81,7 @@ let serverDataCache: {
   homework: HomeworkAssignment[];
   timetable: TimetableSlot[];
   auditLogs: AuditLog[];
+  deletedIds: string[];
   updatedAt: string;
 } = {
   settings: { ...initialSiteSettings },
@@ -101,8 +102,32 @@ let serverDataCache: {
   homework: [...initialHomework],
   timetable: [...initialTimetable],
   auditLogs: [...initialAuditLogs],
+  deletedIds: [],
   updatedAt: new Date().toISOString()
 };
+
+// Permanently purge any records whose ID is present in tombstone deletedIds
+function purgeDeletedRecords(cache: typeof serverDataCache) {
+  if (!cache.deletedIds || cache.deletedIds.length === 0) return;
+  const tombstone = new Set(cache.deletedIds);
+
+  cache.teachers = cache.teachers.filter(t => !tombstone.has(t.id));
+  cache.students = cache.students.filter(s => !tombstone.has(s.id));
+  cache.parents = cache.parents.filter(p => !tombstone.has(p.id));
+  cache.prefects = cache.prefects.filter(p => !tombstone.has(p.id));
+  cache.feePayments = cache.feePayments.filter(f => !tombstone.has(f.id) && !tombstone.has(f.studentId));
+  cache.expenses = cache.expenses.filter(e => !tombstone.has(e.id));
+  cache.admissions = cache.admissions.filter(a => !tombstone.has(a.id));
+  cache.assessmentScores = cache.assessmentScores.filter(s => !tombstone.has(s.id) && !tombstone.has(s.studentId));
+  cache.libraryBooks = cache.libraryBooks.filter(b => !tombstone.has(b.id));
+  cache.inventory = cache.inventory.filter(i => !tombstone.has(i.id));
+  cache.learningMaterials = cache.learningMaterials.filter(m => !tombstone.has(m.id));
+  cache.quizzes = cache.quizzes.filter(q => !tombstone.has(q.id));
+  cache.homework = cache.homework.filter(h => !tombstone.has(h.id));
+  cache.timetable = cache.timetable.filter(tt => !tombstone.has(tt.id) && !tombstone.has(tt.teacherId) && !tombstone.has(tt.classId));
+  cache.announcements = cache.announcements.filter(a => !tombstone.has(a.id));
+  cache.users = cache.users.filter(u => !tombstone.has(u.id) && (!u.linkedTeacherId || !tombstone.has(u.linkedTeacherId)));
+}
 
 // Initialize cache from disk if available
 try {
@@ -110,6 +135,9 @@ try {
     const raw = fs.readFileSync(DATA_FILE_PATH, 'utf-8');
     const parsed = JSON.parse(raw);
     if (parsed.settings) serverDataCache.settings = { ...serverDataCache.settings, ...parsed.settings };
+    if (Array.isArray(parsed.deletedIds)) {
+      serverDataCache.deletedIds = Array.from(new Set([...serverDataCache.deletedIds, ...parsed.deletedIds]));
+    }
     if (Array.isArray(parsed.announcements)) serverDataCache.announcements = parsed.announcements;
     if (Array.isArray(parsed.teachers)) serverDataCache.teachers = parsed.teachers;
     if (Array.isArray(parsed.students)) serverDataCache.students = parsed.students;
@@ -129,6 +157,7 @@ try {
     if (Array.isArray(parsed.users)) {
       serverDataCache.users = filterAuthorizedAccounts(parsed.users, serverDataCache.teachers);
     }
+    purgeDeletedRecords(serverDataCache);
     if (parsed.updatedAt) serverDataCache.updatedAt = parsed.updatedAt;
   }
 } catch {
@@ -136,6 +165,7 @@ try {
 }
 
 export async function GET() {
+  purgeDeletedRecords(serverDataCache);
   return NextResponse.json(serverDataCache, {
     headers: {
       'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
@@ -148,6 +178,11 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
+
+    // Register any newly deleted tombstones immediately
+    if (Array.isArray(body.deletedIds) && body.deletedIds.length > 0) {
+      serverDataCache.deletedIds = Array.from(new Set([...serverDataCache.deletedIds, ...body.deletedIds]));
+    }
 
     if (body.settings) {
       serverDataCache.settings = {
@@ -176,6 +211,9 @@ export async function POST(req: Request) {
     if (Array.isArray(body.users)) {
       serverDataCache.users = filterAuthorizedAccounts(body.users, serverDataCache.teachers);
     }
+
+    // Always enforce tombstone purge after updating collections
+    purgeDeletedRecords(serverDataCache);
 
     serverDataCache.updatedAt = new Date().toISOString();
 

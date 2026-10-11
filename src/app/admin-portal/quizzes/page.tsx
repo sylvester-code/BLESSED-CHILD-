@@ -12,11 +12,12 @@ import {
   Calendar,
   X,
   Play,
-  FileCheck
+  FileCheck,
+  Trash2
 } from 'lucide-react';
 
 export default function QuizzesAdminPage() {
-  const { quizzes, classes, subjects, addQuiz, quizAttempts, students } = useSchool();
+  const { quizzes, classes, subjects, addQuiz, deleteQuiz, quizAttempts, students } = useSchool();
   const [modalOpen, setModalOpen] = useState(false);
 
   // Form State
@@ -114,10 +115,23 @@ export default function QuizzesAdminPage() {
                   <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 uppercase">
                     {q.status}
                   </span>
-                  <span className="text-xs text-slate-500 flex items-center">
-                    <Clock className="w-3.5 h-3.5 mr-1" />
-                    {q.durationMinutes} Minutes Duration
-                  </span>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-xs text-slate-500 flex items-center">
+                      <Clock className="w-3.5 h-3.5 mr-1" />
+                      {q.durationMinutes} Min
+                    </span>
+                    <button
+                      onClick={() => {
+                        if (confirm(`Are you sure you want to permanently delete online quiz assessment '${q.title}'?`)) {
+                          deleteQuiz(q.id);
+                        }
+                      }}
+                      className="p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                      title="Delete Quiz"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
 
                 <h3 className="font-bold text-slate-900 text-base">{q.title}</h3>

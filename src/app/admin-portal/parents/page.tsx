@@ -2,10 +2,10 @@
 
 import React, { useState } from 'react';
 import { useSchool } from '@/context/SchoolContext';
-import { Users, Phone, Mail, MapPin, GraduationCap, Plus, X } from 'lucide-react';
+import { Users, Phone, Mail, MapPin, GraduationCap, Plus, X, Trash2 } from 'lucide-react';
 
 export default function ParentsAdminPage() {
-  const { parents, students, addParent, settings } = useSchool();
+  const { parents, students, addParent, deleteParent, settings } = useSchool();
   const [modalOpen, setModalOpen] = useState(false);
   const [form, setForm] = useState({
     fullName: '',
@@ -85,9 +85,22 @@ export default function ParentsAdminPage() {
                   <h3 className="font-bold text-slate-900 text-base">{p.fullName}</h3>
                   <span className="text-[10px] font-bold text-amber-700 uppercase">{p.relationship}</span>
                 </div>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700">
-                  {linkedWards.length} Wards
-                </span>
+                <div className="flex items-center space-x-1.5">
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700">
+                    {linkedWards.length} Wards
+                  </span>
+                  <button
+                    onClick={() => {
+                      if (confirm(`Are you sure you want to delete parent record for ${p.fullName}?`)) {
+                        deleteParent(p.id);
+                      }
+                    }}
+                    className="p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                    title="Delete Parent Record"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
 
               <div className="space-y-1.5 text-xs text-slate-600 border-t border-b border-slate-100 py-3">

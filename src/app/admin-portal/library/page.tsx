@@ -2,10 +2,10 @@
 
 import React, { useState } from 'react';
 import { useSchool } from '@/context/SchoolContext';
-import { BookCheck, BookOpen, Plus, Search, CheckCircle2 } from 'lucide-react';
+import { BookCheck, BookOpen, Plus, Search, CheckCircle2, Trash2 } from 'lucide-react';
 
 export default function LibraryAdminPage() {
-  const { libraryBooks, borrowBook, returnBook, students } = useSchool();
+  const { libraryBooks, borrowBook, returnBook, deleteLibraryBook, students } = useSchool();
   const [search, setSearch] = useState('');
 
   const filteredBooks = libraryBooks.filter(b =>
@@ -55,7 +55,20 @@ export default function LibraryAdminPage() {
                 <span className="text-[10px] font-bold text-school-navy-900 bg-school-navy-50 px-2 py-0.5 rounded uppercase">
                   {b.category}
                 </span>
-                <span className="text-xs font-mono text-slate-400">{b.shelfLocation}</span>
+                <div className="flex items-center space-x-2">
+                  <span className="text-xs font-mono text-slate-400">{b.shelfLocation}</span>
+                  <button
+                    onClick={() => {
+                      if (confirm(`Are you sure you want to permanently remove '${b.title}' from library catalog?`)) {
+                        deleteLibraryBook(b.id);
+                      }
+                    }}
+                    className="p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                    title="Delete Book"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
               <h3 className="font-bold text-slate-900 text-sm leading-snug">{b.title}</h3>
               <p className="text-xs text-slate-600">By <strong>{b.author}</strong></p>

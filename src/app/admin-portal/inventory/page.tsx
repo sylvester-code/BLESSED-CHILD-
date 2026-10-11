@@ -2,10 +2,10 @@
 
 import React, { useState } from 'react';
 import { useSchool } from '@/context/SchoolContext';
-import { Package, Plus, Search, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Package, Plus, Search, CheckCircle2, AlertCircle, Trash2 } from 'lucide-react';
 
 export default function InventoryAdminPage() {
-  const { inventory, addInventoryItem } = useSchool();
+  const { inventory, addInventoryItem, deleteInventoryItem } = useSchool();
   const [modalOpen, setModalOpen] = useState(false);
   const [form, setForm] = useState({
     name: '',
@@ -55,13 +55,26 @@ export default function InventoryAdminPage() {
               <span className="font-mono text-xs font-bold text-school-navy-900 bg-school-navy-50 px-2 py-0.5 rounded">
                 {item.assetTag}
               </span>
-              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${
-                item.condition === 'Brand New' || item.condition === 'Good'
-                  ? 'bg-emerald-100 text-emerald-800'
-                  : 'bg-amber-100 text-amber-800'
-              }`}>
-                {item.condition}
-              </span>
+              <div className="flex items-center space-x-2">
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${
+                  item.condition === 'Brand New' || item.condition === 'Good'
+                    ? 'bg-emerald-100 text-emerald-800'
+                    : 'bg-amber-100 text-amber-800'
+                }`}>
+                  {item.condition}
+                </span>
+                <button
+                  onClick={() => {
+                    if (confirm(`Are you sure you want to permanently delete asset '${item.name}'?`)) {
+                      deleteInventoryItem(item.id);
+                    }
+                  }}
+                  className="p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                  title="Delete Asset Item"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
             </div>
 
             <h3 className="font-bold text-slate-900 text-sm leading-snug">{item.name}</h3>

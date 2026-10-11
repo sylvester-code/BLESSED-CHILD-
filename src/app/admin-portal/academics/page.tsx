@@ -24,7 +24,8 @@ export default function AcademicsAdminPage() {
     updateClass,
     deleteClass,
     addSubject,
-    updateSubject
+    updateSubject,
+    deleteSubject
   } = useSchool();
 
   const [activeTab, setActiveTab] = useState<'classes' | 'subjects' | 'terms'>('classes');
@@ -180,8 +181,21 @@ export default function AcademicsAdminPage() {
               </div>
 
               <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
-                <span className="text-slate-500">Term Tuition:</span>
-                <span className="font-black text-slate-900">{settings.currencySymbol} {cls.termTuitionFee.toLocaleString()}</span>
+                <div>
+                  <span className="text-slate-500">Term Tuition: </span>
+                  <span className="font-black text-slate-900">{settings.currencySymbol} {cls.termTuitionFee.toLocaleString()}</span>
+                </div>
+                <button
+                  onClick={() => {
+                    if (confirm(`Are you sure you want to permanently delete class '${cls.name}'?`)) {
+                      deleteClass(cls.id);
+                    }
+                  }}
+                  className="p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                  title="Delete Class"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
               </div>
             </div>
           ))}
@@ -204,12 +218,25 @@ export default function AcademicsAdminPage() {
 
               <h3 className="font-bold text-slate-900 text-base">{sub.name}</h3>
 
-              <div className="flex flex-wrap gap-1 pt-1">
-                {sub.applicableLevels.map((lvl) => (
-                  <span key={lvl} className="text-[10px] bg-slate-100 border border-slate-200 px-2 py-0.5 rounded text-slate-600">
-                    {lvl}
-                  </span>
-                ))}
+              <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
+                <div className="flex flex-wrap gap-1">
+                  {sub.applicableLevels.map((lvl) => (
+                    <span key={lvl} className="text-[10px] bg-slate-100 border border-slate-200 px-2 py-0.5 rounded text-slate-600">
+                      {lvl}
+                    </span>
+                  ))}
+                </div>
+                <button
+                  onClick={() => {
+                    if (confirm(`Are you sure you want to permanently delete curriculum subject '${sub.name}'?`)) {
+                      deleteSubject(sub.id);
+                    }
+                  }}
+                  className="p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                  title="Delete Subject"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
               </div>
             </div>
           ))}

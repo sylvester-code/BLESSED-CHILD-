@@ -12,7 +12,8 @@ import {
   Download,
   BookOpen,
   X,
-  FileText
+  FileText,
+  Trash2
 } from 'lucide-react';
 
 export default function HomeworkAdminPage() {
@@ -23,7 +24,9 @@ export default function HomeworkAdminPage() {
     subjects,
     teachers,
     addHomework,
+    deleteHomework,
     addLearningMaterial,
+    deleteLearningMaterial,
     homeworkSubmissions,
     students
   } = useSchool();
@@ -164,9 +167,22 @@ export default function HomeworkAdminPage() {
                     <Calendar className="w-3.5 h-3.5 mr-1" />
                     Due: {hw.dueDate}
                   </span>
-                  <span className="font-bold text-emerald-700">
-                    {subs.length} Student Submission(s)
-                  </span>
+                  <div className="flex items-center space-x-2">
+                    <span className="font-bold text-emerald-700">
+                      {subs.length} Submission(s)
+                    </span>
+                    <button
+                      onClick={() => {
+                        if (confirm(`Are you sure you want to permanently delete homework '${hw.title}'?`)) {
+                          deleteHomework(hw.id);
+                        }
+                      }}
+                      className="p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                      title="Delete Assignment"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
               </div>
             );
@@ -183,9 +199,22 @@ export default function HomeworkAdminPage() {
             return (
               <div key={lm.id} className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs space-y-3 flex flex-col justify-between">
                 <div className="space-y-2">
-                  <span className="text-[10px] font-bold text-school-navy-900 bg-school-navy-50 px-2 py-0.5 rounded uppercase">
-                    {lm.category}
-                  </span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-school-navy-900 bg-school-navy-50 px-2 py-0.5 rounded uppercase">
+                      {lm.category}
+                    </span>
+                    <button
+                      onClick={() => {
+                        if (confirm(`Are you sure you want to permanently delete learning material '${lm.title}'?`)) {
+                          deleteLearningMaterial(lm.id);
+                        }
+                      }}
+                      className="p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                      title="Delete Material"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                   <h3 className="font-bold text-slate-900 text-sm">{lm.title}</h3>
                   <p className="text-xs text-slate-500 line-clamp-3 leading-relaxed">{lm.description}</p>
                   <p className="text-[11px] text-amber-700 font-semibold">{cls?.name} • {subj?.name}</p>
