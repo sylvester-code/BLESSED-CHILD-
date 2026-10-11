@@ -223,7 +223,7 @@ export default function AdminPortalLayout({
                         type={showPassword ? 'text' : 'password'}
                         required
                         autoComplete="current-password"
-                        placeholder="Enter master password (2026)"
+                        placeholder="Enter master password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         className="w-full pl-10 pr-11 py-3 rounded-xl text-white text-sm font-medium placeholder:text-slate-600 focus:outline-none transition-all"
@@ -271,7 +271,7 @@ export default function AdminPortalLayout({
                 <div className="p-3.5 rounded-2xl flex items-start space-x-3" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
                   <Shield className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
                   <p className="text-slate-400 text-[11px] leading-relaxed">
-                    Master Credentials: Username: <strong className="text-amber-300 font-mono">BLESSED</strong> • Password: <strong className="text-amber-300 font-mono">2026</strong>. All console activity is cryptographically logged.
+                    Admin Access: Username: <strong className="text-amber-300 font-mono">BLESSED</strong>. Console sessions are cryptographically authenticated and monitored.
                   </p>
                 </div>
               </div>
@@ -303,11 +303,11 @@ export default function AdminPortalLayout({
     );
   }
 
-  // Authenticated Super Admin Layout
+  // Authenticated Super Admin Layout: Fixed static sidebar on left with independent content scrolling
   return (
-    <div className="min-h-screen bg-slate-100 flex">
-      {/* Desktop Sidebar */}
-      <div className="hidden lg:block">
+    <div className="h-screen bg-slate-100 flex overflow-hidden">
+      {/* Desktop Sidebar: Static Fixed on Left, does NOT scroll with page */}
+      <div className="hidden lg:flex lg:flex-col lg:w-64 lg:flex-shrink-0 h-full border-r border-white/10 bg-school-navy-950 z-30">
         <AdminSidebar />
       </div>
 
@@ -333,9 +333,9 @@ export default function AdminPortalLayout({
       )}
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 min-h-0">
+      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
         {/* Top Header with Mobile Hamburger toggle */}
-        <div className="flex items-center bg-white border-b border-slate-200 lg:hidden px-4 h-14 justify-between">
+        <div className="flex items-center bg-white border-b border-slate-200 lg:hidden px-4 h-14 justify-between flex-shrink-0">
           <button
             onClick={() => setMobileSidebarOpen(true)}
             className="p-2 rounded-lg text-slate-700 hover:bg-slate-100"
@@ -348,10 +348,14 @@ export default function AdminPortalLayout({
           <div className="w-5"></div>
         </div>
 
-        <AdminHeader />
+        <div className="flex-shrink-0">
+          <AdminHeader />
+        </div>
 
-        <main className="flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6 lg:p-8">
-          {children}
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+          <div className="max-w-7xl mx-auto space-y-6">
+            {children}
+          </div>
         </main>
       </div>
     </div>

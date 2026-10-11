@@ -427,9 +427,9 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     let loadedTeachers: Teacher[] = [];
 
     try {
-      // Clean slate migration: purge any legacy demo data from browser storage
+      // Clean slate migration: purge all cache from browser storage
       const storageVersion = localStorage.getItem('blessed_clean_version');
-      if (storageVersion !== 'v8_clean_slate_live_sync') {
+      if (storageVersion !== 'v9_clear_all_cache_and_static_layout') {
         localStorage.removeItem('blessed_students');
         localStorage.removeItem('blessed_teachers');
         localStorage.removeItem('blessed_parents');
@@ -441,8 +441,9 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         localStorage.removeItem('blessed_attendance');
         localStorage.removeItem('blessed_users');
         localStorage.removeItem('blessed_active_teacher');
+        localStorage.removeItem('blessed_settings');
         localStorage.setItem('blessed_admin_creds', JSON.stringify({ username: 'BLESSED', password: '2026' }));
-        localStorage.setItem('blessed_clean_version', 'v8_clean_slate_live_sync');
+        localStorage.setItem('blessed_clean_version', 'v9_clear_all_cache_and_static_layout');
         setAdminCreds({ username: 'BLESSED', password: '2026' });
         setStudents([]);
         setTeachers([]);

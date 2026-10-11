@@ -1303,7 +1303,7 @@ export default function SettingsAdminPage() {
                   Currently Active Master Login Credentials
                 </span>
                 <p className="text-xs text-slate-300 mt-0.5">
-                  Username: <strong className="text-white font-mono">{adminCreds.username}</strong> • Password: <strong className="text-white font-mono">{adminCreds.password}</strong>
+                  Username: <strong className="text-white font-mono">{adminCreds.username}</strong> • Password: <strong className="text-white font-mono">••••••••</strong>
                 </p>
               </div>
               <span className="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-3 py-1 rounded-full font-bold self-start sm:self-auto">
@@ -1321,7 +1321,7 @@ export default function SettingsAdminPage() {
                   required
                   value={adminUsername}
                   onChange={(e) => setAdminUsername(e.target.value)}
-                  placeholder="e.g. BLESSED CHILD"
+                  placeholder="e.g. BLESSED"
                   className="w-full text-xs px-3.5 py-2.5 border rounded-xl font-bold text-slate-900"
                 />
               </div>

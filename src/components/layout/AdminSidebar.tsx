@@ -91,7 +91,7 @@ export const AdminSidebar = () => {
   };
 
   return (
-    <aside className="w-full bg-gradient-to-b from-school-navy-950 via-[#0a1e45] to-school-navy-950 text-slate-300 flex flex-col flex-shrink-0 border-r border-white/10 select-none shadow-2xl">
+    <aside className="w-64 h-full bg-gradient-to-b from-school-navy-950 via-[#0a1e45] to-school-navy-950 text-slate-300 flex flex-col flex-shrink-0 select-none shadow-2xl overflow-hidden">
       {/* Brand Header */}
       <div className="p-4 border-b border-white/10 bg-white/5 backdrop-blur-md">
         <Link href="/admin-portal" className="flex items-center space-x-3 group">
