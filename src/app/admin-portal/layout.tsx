@@ -16,9 +16,19 @@ import {
   Eye,
   EyeOff,
   Home,
-  CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Database,
+  Settings,
+  Users,
+  ShieldCheck
 } from 'lucide-react';
+
+const ADMIN_FEATURES = [
+  { icon: Users, label: 'Role & User Management', desc: 'Create, assign and manage all staff roles' },
+  { icon: Database, label: 'Full Data Control', desc: 'Students, teachers, fees and academics' },
+  { icon: Settings, label: 'System Configuration', desc: 'Site settings, CMS and portal setup' },
+  { icon: ShieldCheck, label: 'Security Audit Trail', desc: 'Cryptographic activity logging' },
+];
 
 export default function AdminPortalLayout({
   children,
@@ -29,144 +39,240 @@ export default function AdminPortalLayout({
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   // Admin login form states
-  const [username, setUsername] = useState(adminCreds.username || 'BLESSED CHILD');
-  const [password, setPassword] = useState(adminCreds.password || '4040');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  React.useEffect(() => {
-    if (adminCreds) {
-      setUsername(adminCreds.username);
-      setPassword(adminCreds.password);
-    }
-  }, [adminCreds.username, adminCreds.password]);
 
   const handleAdminLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsSubmitting(true);
 
-    const result = loginAdmin(username, password);
-    if (!result.success) {
-      setError(result.error || 'Authentication failed. Please verify your master credentials.');
-      setIsSubmitting(false);
-    } else {
-      setIsSubmitting(false);
-      window.location.href = '/admin-portal'; // Force redirect to dashboard to ensure state syncs fully
-    }
+    setTimeout(() => {
+      const result = loginAdmin(username, password);
+      if (!result.success) {
+        setError(result.error || 'Authentication failed. Please verify your master credentials.');
+        setIsSubmitting(false);
+      } else {
+        setIsSubmitting(false);
+        window.location.href = '/admin-portal';
+      }
+    }, 600);
   };
 
   // If not authenticated, show Super Admin Login Gateway
   if (!isAdminAuthenticated) {
     return (
-      <div className="min-h-screen bg-slate-950 flex flex-col justify-center items-center p-4 relative overflow-hidden">
-        {/* Background decorative glowing orbs */}
-        <div className="absolute top-1/4 -left-32 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
-        <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div className="min-h-screen flex overflow-hidden relative" style={{ background: 'linear-gradient(135deg, #020817 0%, #040e21 40%, #07142e 70%, #020817 100%)' }}>
+        {/* Background effects */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-60 -left-60 w-[700px] h-[700px] rounded-full opacity-15"
+            style={{ background: 'radial-gradient(circle, #f59e0b 0%, transparent 70%)', filter: 'blur(80px)' }} />
+          <div className="absolute -bottom-60 -right-60 w-[600px] h-[600px] rounded-full opacity-10"
+            style={{ background: 'radial-gradient(circle, #1d4ed8 0%, transparent 70%)', filter: 'blur(80px)' }} />
+          <div className="absolute inset-0" style={{
+            backgroundImage: 'linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px)',
+            backgroundSize: '40px 40px'
+          }} />
+        </div>
 
-        <div className="max-w-md w-full relative z-10 space-y-6">
-          {/* Logo & Header */}
-          <div className="text-center space-y-3">
-            <div className="flex justify-center">
-              <SchoolLogo size="lg" />
+        {/* Left Feature Panel */}
+        <div className="hidden xl:flex flex-col justify-between w-[480px] flex-shrink-0 p-10 relative z-10">
+          <div>
+            <div className="flex items-center space-x-3 mb-12">
+              <SchoolLogo size="md" className="shadow-2xl border-2 border-amber-400/40" />
+              <div>
+                <div className="text-white font-black text-lg leading-tight">{settings.schoolName}</div>
+                <div className="text-amber-400/80 text-xs font-semibold uppercase tracking-widest">{settings.schoolMotto}</div>
+              </div>
             </div>
-            <div>
-              <span className="text-[11px] font-extrabold uppercase tracking-widest text-amber-400 bg-amber-400/10 border border-amber-400/20 px-3 py-1 rounded-full inline-block">
-                Master Security Gate
-              </span>
-              <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight mt-2">
-                Super Admin Console
-              </h1>
-              <p className="text-xs text-slate-400 mt-1">
-                {settings.schoolName} • {settings.locationCity || 'Anaji-Mpatado'}, {settings.locationCountry || 'Ghana'}
+
+            <div className="mb-8">
+              <div className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full mb-5" style={{ background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.2)' }}>
+                <Shield className="w-3.5 h-3.5 text-amber-400" />
+                <span className="text-amber-300 text-[10px] font-extrabold uppercase tracking-widest">Super Admin Console</span>
+              </div>
+              <h2 className="text-3xl font-black text-white mb-2 leading-tight">Master Control<br />Command Center</h2>
+              <p className="text-slate-400 text-sm leading-relaxed">
+                The highest-privilege access tier for managing the entire school information system — staff, academics, finance, and system configuration.
+              </p>
+            </div>
+
+            <div className="space-y-2.5">
+              {ADMIN_FEATURES.map((feat, i) => (
+                <div key={i} className="flex items-center space-x-4 p-4 rounded-2xl transition-all hover:scale-[1.01]"
+                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                    style={{ background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.2)' }}>
+                    <feat.icon className="w-5 h-5 text-amber-400" />
+                  </div>
+                  <div>
+                    <div className="text-white text-sm font-bold">{feat.label}</div>
+                    <div className="text-slate-400 text-xs">{feat.desc}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="p-4 rounded-2xl" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <div className="flex items-start space-x-3">
+              <Shield className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+              <p className="text-slate-400 text-xs leading-relaxed">
+                Super Administrative access is restricted to authorized personnel only. All login attempts are cryptographically logged in the security audit trail.
               </p>
             </div>
           </div>
+        </div>
 
-          {/* Login Card */}
-          <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-md space-y-5">
-            {error && (
-              <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-start space-x-2.5">
-                <AlertCircle className="w-4 h-4 text-rose-400 flex-shrink-0 mt-0.5" />
-                <span className="leading-relaxed">{error}</span>
+        {/* Right Login Panel */}
+        <div className="flex-1 flex items-center justify-center p-6 relative z-10">
+          <div className="w-full max-w-md">
+            {/* Mobile Logo */}
+            <div className="xl:hidden text-center mb-8 space-y-3">
+              <div className="flex justify-center">
+                <SchoolLogo size="lg" className="shadow-2xl border-2 border-amber-400/40" />
               </div>
-            )}
-
-            <form onSubmit={handleAdminLogin} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
-                  Super Admin Username
-                </label>
-                <div className="relative">
-                  <User className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
-                  <input
-                    type="text"
-                    required
-                    placeholder={`Enter ${adminCreds.username}`}
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white text-xs font-semibold placeholder:text-slate-600 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-colors"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
-                  Master Password
-                </label>
-                <div className="relative">
-                  <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    required
-                    placeholder="Enter Master Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-10 pr-10 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white text-xs font-semibold placeholder:text-slate-600 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-colors"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-3.5 text-slate-500 hover:text-slate-300 transition-colors"
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-slate-950 font-black text-xs uppercase tracking-wider shadow-lg shadow-amber-500/20 hover:shadow-xl transition-all flex items-center justify-center space-x-2 mt-2 disabled:opacity-50"
-              >
-                <span>Unlock Control Center</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </form>
-
-            {/* Quick credentials hint for easy access */}
-            <div className="pt-4 border-t border-slate-800 text-center">
-              <div className="bg-slate-950/70 border border-slate-800 rounded-xl p-3 text-[11px] text-slate-400 space-y-1">
-                <p className="font-semibold text-amber-300 flex items-center justify-center space-x-1">
-                  <Shield className="w-3.5 h-3.5 mr-1" />
-                  Master Access Credentials
-                </p>
-                <p>Username: <strong className="text-white font-mono">{adminCreds.username}</strong></p>
-                <p>Password: <strong className="text-white font-mono">{adminCreds.password}</strong></p>
+                <h1 className="text-2xl font-black text-white">{settings.schoolName}</h1>
+                <p className="text-amber-400/80 text-xs font-semibold uppercase tracking-widest mt-1">{settings.schoolMotto}</p>
               </div>
             </div>
-          </div>
 
-          {/* Back to Public Website */}
-          <div className="text-center">
-            <Link
-              href="/"
-              className="inline-flex items-center space-x-1.5 text-xs text-slate-500 hover:text-slate-300 transition-colors"
-            >
-              <Home className="w-3.5 h-3.5" />
-              <span>Return to School Website</span>
-            </Link>
+            {/* Login Card */}
+            <div className="rounded-3xl overflow-hidden shadow-2xl" style={{
+              background: 'rgba(5, 15, 40, 0.90)',
+              backdropFilter: 'blur(30px)',
+              border: '1px solid rgba(255,255,255,0.08)'
+            }}>
+              {/* Card Header */}
+              <div className="p-8 pb-6 border-b border-white/10" style={{ background: 'linear-gradient(180deg, rgba(245,158,11,0.06) 0%, transparent 100%)' }}>
+                <div className="flex items-center space-x-2 mb-3">
+                  <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/20 text-red-300 text-[10px] font-extrabold uppercase tracking-widest">
+                    <Lock className="w-3 h-3 text-red-400" />
+                    <span>Master Security Gate</span>
+                  </div>
+                </div>
+                <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">Super Admin Console</h2>
+                <p className="text-slate-400 text-xs mt-1.5">{settings.locationCity || 'Anaji-Mpatado'}, {settings.locationCountry || 'Ghana'} • Highest Privilege Access</p>
+              </div>
+
+              <div className="p-8 space-y-5">
+                {error && (
+                  <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-start space-x-2.5">
+                    <AlertCircle className="w-4 h-4 text-rose-400 flex-shrink-0 mt-0.5" />
+                    <span className="leading-relaxed font-medium">{error}</span>
+                  </div>
+                )}
+
+                <form onSubmit={handleAdminLogin} className="space-y-4">
+                  <div className="space-y-1.5">
+                    <label className="block text-[11px] font-bold text-slate-300 uppercase tracking-wider">
+                      Admin Username
+                    </label>
+                    <div className="relative">
+                      <User className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
+                      <input
+                        type="text"
+                        required
+                        autoComplete="username"
+                        placeholder={`e.g. ${adminCreds.username}`}
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        className="w-full pl-10 pr-4 py-3 rounded-xl text-white text-sm font-medium placeholder:text-slate-600 focus:outline-none transition-all"
+                        style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)' }}
+                        onFocus={(e) => { e.target.style.borderColor = '#f59e0b'; e.target.style.boxShadow = '0 0 0 2px rgba(245,158,11,0.15)'; }}
+                        onBlur={(e) => { e.target.style.borderColor = 'rgba(255,255,255,0.12)'; e.target.style.boxShadow = 'none'; }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="block text-[11px] font-bold text-slate-300 uppercase tracking-wider">
+                      Master Password
+                    </label>
+                    <div className="relative">
+                      <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        required
+                        autoComplete="current-password"
+                        placeholder="Enter master password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="w-full pl-10 pr-11 py-3 rounded-xl text-white text-sm font-medium placeholder:text-slate-600 focus:outline-none transition-all"
+                        style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)' }}
+                        onFocus={(e) => { e.target.style.borderColor = '#f59e0b'; e.target.style.boxShadow = '0 0 0 2px rgba(245,158,11,0.15)'; }}
+                        onBlur={(e) => { e.target.style.borderColor = 'rgba(255,255,255,0.12)'; e.target.style.boxShadow = 'none'; }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3.5 top-3.5 text-slate-500 hover:text-slate-300 transition-colors"
+                      >
+                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full py-3.5 px-6 rounded-xl font-black text-sm uppercase tracking-wider shadow-lg flex items-center justify-center space-x-2.5 mt-2 group transition-all duration-200 disabled:opacity-60"
+                    style={{
+                      background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%)',
+                      color: '#020617',
+                      boxShadow: '0 4px 20px rgba(245,158,11,0.3)'
+                    }}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                        </svg>
+                        <span>Verifying Authorization...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Unlock Control Console</span>
+                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                      </>
+                    )}
+                  </button>
+                </form>
+
+                <div className="p-3.5 rounded-2xl flex items-start space-x-3" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                  <Shield className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+                  <p className="text-slate-400 text-[11px] leading-relaxed">
+                    All console activity is cryptographically logged. Unauthorized access attempts are recorded and reported.
+                  </p>
+                </div>
+              </div>
+
+              <div className="px-8 py-5 border-t border-white/10 flex items-center justify-between" style={{ background: 'rgba(0,0,0,0.2)' }}>
+                <Link
+                  href="/"
+                  className="inline-flex items-center space-x-1.5 text-xs text-slate-500 hover:text-slate-300 transition-colors"
+                >
+                  <Home className="w-3.5 h-3.5" />
+                  <span>School Website</span>
+                </Link>
+                <Link
+                  href="/portal"
+                  className="inline-flex items-center space-x-1.5 text-xs text-slate-500 hover:text-amber-300 transition-colors"
+                >
+                  <Users className="w-3.5 h-3.5 text-amber-500/60" />
+                  <span>Staff Portal Login</span>
+                </Link>
+              </div>
+            </div>
+
+            <p className="text-center text-slate-600 text-[10px] mt-6">
+              © {new Date().getFullYear()} {settings.schoolName} • Authorized Personnel Only
+            </p>
           </div>
         </div>
       </div>

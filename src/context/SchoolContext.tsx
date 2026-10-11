@@ -66,6 +66,11 @@ interface SchoolContextType {
   setCurrentUser: (user: User) => void;
   users: User[];
   switchRole: (role: UserRole) => void;
+  addUser: (userData: Omit<User, 'id' | 'createdAt'>) => User;
+  updateUser: (id: string, updates: Partial<User>) => void;
+  deleteUser: (id: string) => void;
+  updateUserRole: (id: string, newRole: UserRole) => void;
+  loginPortalUser: (usernameOrEmail: string, passwordInput: string) => { success: boolean; user?: User; redirectUrl?: string; error?: string };
 
   // Super Admin Credentials & Session
   adminCreds: { username: string; password: string };
@@ -381,6 +386,9 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       const storedUser = localStorage.getItem('blessed_user');
       if (storedUser) setCurrentUser(JSON.parse(storedUser));
 
+      const storedUsers = localStorage.getItem('blessed_users');
+      if (storedUsers) setUsers(JSON.parse(storedUsers));
+
       const storedStudents = localStorage.getItem('blessed_students');
       if (storedStudents) setStudents(JSON.parse(storedStudents));
 
@@ -411,6 +419,7 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     if (!isClient) return;
     try {
       localStorage.setItem('blessed_settings', JSON.stringify(settings));
+      localStorage.setItem('blessed_users', JSON.stringify(users));
       localStorage.setItem('blessed_students', JSON.stringify(students));
       localStorage.setItem('blessed_teachers', JSON.stringify(teachers));
       localStorage.setItem('blessed_prefects', JSON.stringify(prefects));
@@ -427,7 +436,7 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     } catch {
       // ignore
     }
-  }, [settings, students, teachers, prefects, admissions, assessmentScores, feePayments, currentUser, adminCreds, activeTeacher, isClient]);
+  }, [settings, users, students, teachers, prefects, admissions, assessmentScores, feePayments, currentUser, adminCreds, activeTeacher, isClient]);
 
   // Dynamically apply Theme CSS Variables and Document Title on mount & updates
   useEffect(() => {
@@ -504,6 +513,142 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   };
 
+  const addUser = (userData: Omit<User, 'id' | 'createdAt'>): User => {
+    const newUser: User = {
+      ...userData,
+      id: `usr-${Date.now()}`,
+      createdAt: new Date().toISOString().split('T')[0]
+    };
+    setUsers(prev => [newUser, ...prev]);
+    logAuditEvent('Users & Roles', `Super Administrator registered user ${newUser.name} with role ${newUser.role} (Username: ${newUser.username})`);
+    return newUser;
+  };
+
+  const updateUser = (id: string, updates: Partial<User>) => {
+    setUsers(prev => prev.map(u => u.id === id ? { ...u, ...updates } : u));
+    if (currentUser.id === id) {
+      setCurrentUser(prev => ({ ...prev, ...updates }));
+    }
+    logAuditEvent('Users & Roles', `Super Administrator updated account details for user ID: ${id}`);
+  };
+
+  const updateUserRole = (id: string, newRole: UserRole) => {
+    setUsers(prev => prev.map(u => {
+      if (u.id === id) {
+        logAuditEvent('Users & Roles', `Super Administrator reassigned role for ${u.name} from ${u.role} to ${newRole}`);
+        return { ...u, role: newRole };
+      }
+      return u;
+    }));
+    if (currentUser.id === id) {
+      setCurrentUser(prev => ({ ...prev, role: newRole }));
+    }
+  };
+
+  const deleteUser = (id: string) => {
+    const target = users.find(u => u.id === id);
+    setUsers(prev => prev.filter(u => u.id !== id));
+    logAuditEvent('Users & Roles', `Super Administrator removed user account ${target?.name || id}`);
+  };
+
+  const loginPortalUser = (usernameOrEmailInput: string, passwordInput: string): { success: boolean; user?: User; redirectUrl?: string; error?: string } => {
+    const trimmed = usernameOrEmailInput.trim().toLowerCase();
+
+    // 1. Search in persistent registered users assigned by Super Admin
+    const matchedUser = users.find(
+      u => (u.username && u.username.toLowerCase() === trimmed) ||
+           (u.email && u.email.toLowerCase() === trimmed)
+    );
+
+    if (matchedUser) {
+      if (matchedUser.password && matchedUser.password !== passwordInput) {
+        return { success: false, error: 'Incorrect password for this user account.' };
+      }
+
+      setCurrentUser(matchedUser);
+
+      // If linked to a teacher, activate teacher context
+      if (matchedUser.role === 'TEACHER' || matchedUser.linkedTeacherId) {
+        const matchedTeacher = teachers.find(
+          t => t.id === matchedUser.linkedTeacherId ||
+               t.username?.toLowerCase() === trimmed ||
+               t.email?.toLowerCase() === trimmed
+        );
+        if (matchedTeacher) {
+          setActiveTeacher(matchedTeacher);
+        }
+      }
+
+      // Route dynamically according to the interconnected role assigned by Super Admin
+      let redirectUrl = '/portal';
+      if (matchedUser.role === 'TEACHER') {
+        redirectUrl = '/portal/teacher';
+      } else if (matchedUser.role === 'ACCOUNTANT') {
+        redirectUrl = '/portal/accountant';
+      } else if (matchedUser.role === 'ADMISSIONS_OFFICER') {
+        redirectUrl = '/portal/admissions-officer';
+      } else if (
+        matchedUser.role === 'SUPER_ADMIN' ||
+        matchedUser.role === 'HEADTEACHER' ||
+        matchedUser.role === 'SCHOOL_ADMIN' ||
+        matchedUser.role === 'LIBRARIAN' ||
+        matchedUser.role === 'RECEPTIONIST' ||
+        matchedUser.role === 'STAFF'
+      ) {
+        setIsAdminAuthenticated(true);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('blessed_admin_session', 'true');
+        }
+        redirectUrl = '/admin-portal';
+      }
+
+      logAuditEvent('Users & Roles', `User ${matchedUser.name} (${matchedUser.role}) authenticated via Portal Login`);
+      return { success: true, user: matchedUser, redirectUrl };
+    }
+
+    // 2. Fallback check directly in teachers list
+    const matchedTeacher = teachers.find(
+      t => (t.username && t.username.toLowerCase() === trimmed) ||
+           (t.email && t.email.toLowerCase() === trimmed) ||
+           (t.staffId && t.staffId.toLowerCase() === trimmed)
+    );
+
+    if (matchedTeacher) {
+      if (matchedTeacher.password && matchedTeacher.password !== passwordInput) {
+        return { success: false, error: 'Incorrect password for this teacher account.' };
+      }
+      setActiveTeacher(matchedTeacher);
+      const teacherUser: User = {
+        id: `usr-tch-${matchedTeacher.id}`,
+        name: matchedTeacher.fullName,
+        email: matchedTeacher.email,
+        role: 'TEACHER',
+        username: matchedTeacher.username || 'teacher',
+        linkedTeacherId: matchedTeacher.id,
+        createdAt: matchedTeacher.employmentDate
+      };
+      setCurrentUser(teacherUser);
+      logAuditEvent('Users & Roles', `Teacher ${matchedTeacher.fullName} authenticated via Portal Login`);
+      return { success: true, user: teacherUser, redirectUrl: '/portal/teacher' };
+    }
+
+    // 3. Super Admin master credentials fallback
+    if (trimmed === adminCreds.username.toLowerCase() && passwordInput === adminCreds.password) {
+      setIsAdminAuthenticated(true);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('blessed_admin_session', 'true');
+      }
+      const adminUser = users.find(u => u.role === 'SUPER_ADMIN') || initialUsers[0];
+      setCurrentUser(adminUser);
+      return { success: true, user: adminUser, redirectUrl: '/admin-portal' };
+    }
+
+    return {
+      success: false,
+      error: 'Account not found. Please contact the Super Administrator to verify your assigned role and credentials.'
+    };
+  };
+
   const loginAdmin = (usernameInput: string, passwordInput: string): { success: boolean; error?: string } => {
     const isUserMatch = usernameInput.trim().toUpperCase() === adminCreds.username.toUpperCase();
     const isPassMatch = passwordInput === adminCreds.password;
@@ -520,7 +665,7 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
     return {
       success: false,
-      error: `Invalid administrator credentials. Expected username "${adminCreds.username}" and password "${adminCreds.password}".`
+      error: 'Invalid administrator credentials. Please check your username and master password.'
     };
   };
 
@@ -707,8 +852,12 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const logoutTeacher = () => {
     setActiveTeacher(null);
+    setCurrentUser(initialUsers[0]);
     if (typeof window !== 'undefined') {
       localStorage.removeItem('blessed_active_teacher');
+      localStorage.removeItem('blessed_user');
+      // Redirect to portal login
+      window.location.href = '/portal';
     }
   };
 
@@ -1181,6 +1330,11 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         setCurrentUser,
         users,
         switchRole,
+        addUser,
+        updateUser,
+        deleteUser,
+        updateUserRole,
+        loginPortalUser,
         adminCreds,
         isAdminAuthenticated,
         loginAdmin,

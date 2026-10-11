@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { useSchool } from '@/context/SchoolContext';
 import { PortalSidebar } from '@/components/layout/PortalSidebar';
 import { PortalHeader } from '@/components/layout/PortalHeader';
@@ -13,6 +14,12 @@ export default function PortalLayout({
 }) {
   const { settings } = useSchool();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const pathname = usePathname();
+
+  // The portal root (/portal) is the login page — render it WITHOUT the sidebar/header shell
+  if (pathname === '/portal') {
+    return <>{children}</>;
+  }
 
   return (
     <div className="min-h-screen bg-slate-100 flex">
