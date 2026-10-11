@@ -488,49 +488,11 @@ export default function SettingsAdminPage() {
             </div>
           </div>
 
-          {/* Announcement Ticker Configuration */}
-          <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xs space-y-4">
-            <div className="flex items-center justify-between border-b pb-3">
-              <div>
-                <h3 className="font-black text-slate-900 text-base flex items-center">
-                  <Sparkles className="w-5 h-5 mr-2 text-amber-500" />
-                  2. Top Announcement Marquee Ticker
-                </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Display an urgent notice, admissions alert, or school news marquee along the very top of every page.
-                </p>
-              </div>
-
-              <label className="flex items-center space-x-2 cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={formData.showAnnouncementTicker !== false}
-                  onChange={(e) => setFormData({ ...formData, showAnnouncementTicker: e.target.checked })}
-                  className="w-4 h-4 text-amber-600 rounded focus:ring-amber-500"
-                />
-                <span className="text-xs font-bold text-slate-700">Enable Ticker</span>
-              </label>
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Announcement Notice Content
-              </label>
-              <textarea
-                rows={2}
-                value={formData.announcementTicker}
-                onChange={(e) => setFormData({ ...formData, announcementTicker: e.target.value })}
-                placeholder="e.g. Admissions ongoing for 2024/2025 Academic Year • Blessed Child achieves 100% BECE Distinction rate..."
-                className="w-full text-xs px-3.5 py-2.5 border rounded-xl font-medium text-slate-900"
-              />
-            </div>
-          </div>
-
           {/* Interface Feature Visibility Toggles */}
           <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xs space-y-4">
             <h3 className="font-black text-slate-900 text-base border-b pb-3 flex items-center">
               <Layout className="w-5 h-5 mr-2 text-school-navy-900" />
-              3. Interface Feature &amp; Component Toggles
+              2. Interface Feature &amp; Component Toggles
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">

@@ -40,43 +40,37 @@ export const Navbar = () => {
 
   return (
     <header className="sticky top-0 z-50 glass-nav transition-all duration-300">
-      {/* Top Notice / Contact Bar */}
-      {settings.showAnnouncementTicker !== false && (
-        <div className="bg-gradient-to-r from-school-navy-950 via-school-navy-900 to-school-navy-950 text-slate-200 text-xs py-2 px-4 border-b border-school-navy-800/80 transition-all">
-          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-            <div className="flex items-center space-x-3 overflow-hidden text-ellipsis whitespace-nowrap">
-              <span className="inline-flex items-center text-amber-300 font-extrabold uppercase tracking-wider text-[10px] bg-amber-400/15 px-2.5 py-0.5 rounded-full border border-amber-400/30 shadow-xs">
-                <Sparkles className="w-3 h-3 mr-1 text-amber-300 animate-pulse" />
-                Notice
-              </span>
-              <span className="truncate text-slate-300 font-medium text-[11px] sm:text-xs">
-                {settings.announcementTicker}
-              </span>
-            </div>
+      {/* Sleek Clean Contact & Portal Header (Ticker Removed) */}
+      <div className="bg-school-navy-950 text-slate-300 text-xs py-2 px-4 border-b border-white/10 hidden sm:block">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="flex items-center space-x-6 text-xs text-slate-300">
+            <a 
+              href={`tel:${settings.primaryPhone}`} 
+              className="hover:text-amber-300 flex items-center transition-colors font-medium group"
+            >
+              <Phone className="w-3.5 h-3.5 mr-1.5 text-amber-400 group-hover:scale-110 transition-transform" />
+              <span>{settings.primaryPhone}</span>
+            </a>
+            <span className="hidden md:inline-flex items-center text-slate-400">
+              <MapPin className="w-3.5 h-3.5 mr-1.5 text-amber-400" />
+              {settings.location || 'Anaji-Mpatado, Takoradi, Ghana'}
+            </span>
+          </div>
 
-            <div className="flex items-center space-x-5 text-slate-300 text-xs">
-              <a 
-                href={`tel:${settings.primaryPhone}`} 
-                className="hover:text-amber-300 flex items-center transition-colors font-medium group"
-              >
-                <Phone className="w-3.5 h-3.5 mr-1.5 text-amber-400 group-hover:scale-110 transition-transform" />
-                <span>{settings.primaryPhone}</span>
-              </a>
-              <span className="hidden md:inline-flex items-center text-slate-400">
-                <MapPin className="w-3.5 h-3.5 mr-1.5 text-amber-400" />
-                {settings.city || settings.locationCity || 'Takoradi'}, Ghana
-              </span>
-              <Link 
-                href="/admin-portal" 
-                className="hidden sm:inline-flex items-center text-amber-400/90 hover:text-amber-300 transition-colors text-[11px] font-semibold bg-white/5 px-2 py-0.5 rounded border border-white/10"
-              >
-                <Lock className="w-2.5 h-2.5 mr-1" />
-                Portal
-              </Link>
-            </div>
+          <div className="flex items-center space-x-4">
+            <span className="text-[11px] text-amber-300/80 font-medium italic hidden lg:inline">
+              &ldquo;{settings.schoolMotto}&rdquo;
+            </span>
+            <Link 
+              href="/admin-portal" 
+              className="inline-flex items-center text-amber-300 hover:text-white transition-colors text-[11px] font-semibold bg-white/5 hover:bg-white/10 px-2.5 py-0.5 rounded-lg border border-white/10"
+            >
+              <Lock className="w-2.5 h-2.5 mr-1.5" />
+              Admin Portal
+            </Link>
           </div>
         </div>
-      )}
+      </div>
 
       {/* Main Navbar */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

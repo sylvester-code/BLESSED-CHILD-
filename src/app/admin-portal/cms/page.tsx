@@ -416,15 +416,7 @@ export default function CMSAdminPage() {
             />
           </div>
 
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">Top Announcement Ticker Banner</label>
-            <input
-              type="text"
-              value={formData.announcementTicker}
-              onChange={(e) => setFormData({ ...formData, announcementTicker: e.target.value })}
-              className="w-full text-xs px-3.5 py-2.5 border rounded-xl font-semibold text-amber-900 bg-amber-50/70"
-            />
-          </div>
+
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
             <div>
