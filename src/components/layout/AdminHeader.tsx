@@ -241,7 +241,7 @@ export const AdminHeader = () => {
                   <input
                     type="password"
                     required
-                    placeholder="Enter current password (default: 4040)"
+                    placeholder="Enter current password (default: 2026)"
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
                     className="w-full px-3.5 py-2.5 border rounded-xl bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-amber-500"

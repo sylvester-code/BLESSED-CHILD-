@@ -87,8 +87,8 @@ export const initialUsers: User[] = [
     name: "Super Administrator",
     email: "admin@blessedchildschool.edu.gh",
     role: "SUPER_ADMIN",
-    username: "BLESSED CHILD",
-    password: "4040",
+    username: "BLESSED",
+    password: "2026",
     phone: "+233 24 456 7890",
     avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=250&q=80",
     createdAt: "2023-01-10"

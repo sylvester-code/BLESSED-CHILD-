@@ -352,8 +352,8 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   // Super Admin Master Credentials & Auth Session
   const [adminCreds, setAdminCreds] = useState<{ username: string; password: string }>({
-    username: 'BLESSED CHILD',
-    password: '4040'
+    username: 'BLESSED',
+    password: '2026'
   });
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(false);
   const [activeTeacher, setActiveTeacher] = useState<Teacher | null>(null);
@@ -488,6 +488,14 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setSettings(prev => {
       const updated = { ...prev, ...newSettings };
       logAuditEvent('Settings', 'Updated school site settings and configurations');
+      // Push changes to server so all visitors see the latest data immediately
+      try {
+        fetch('/api/school-data', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ settings: updated })
+        }).catch(() => { /* silent – local state still updated */ });
+      } catch { /* ignore */ }
       return updated;
     });
   };
@@ -1237,13 +1245,34 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       id: `anc-${Date.now()}`,
       datePosted: new Date().toISOString().split('T')[0]
     };
-    setAnnouncements(prev => [newAnc, ...prev]);
+    setAnnouncements(prev => {
+      const updated = [newAnc, ...prev];
+      // Sync live so visitors see the new announcement instantly
+      try {
+        fetch('/api/school-data', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ announcements: updated })
+        }).catch(() => {});
+      } catch { /* ignore */ }
+      return updated;
+    });
     logAuditEvent('CMS', `Published bulletin announcement: ${newAnc.title}`);
     return newAnc;
   };
 
   const deleteAnnouncement = (id: string) => {
-    setAnnouncements(prev => prev.filter(a => a.id !== id));
+    setAnnouncements(prev => {
+      const updated = prev.filter(a => a.id !== id);
+      try {
+        fetch('/api/school-data', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ announcements: updated })
+        }).catch(() => {});
+      } catch { /* ignore */ }
+      return updated;
+    });
     logAuditEvent('CMS', `Deleted announcement`, id);
   };
 

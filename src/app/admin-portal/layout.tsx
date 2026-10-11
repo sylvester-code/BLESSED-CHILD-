@@ -178,7 +178,7 @@ export default function AdminPortalLayout({
                         type="text"
                         required
                         autoComplete="username"
-                        placeholder={`e.g. ${adminCreds.username}`}
+                        placeholder="e.g. BLESSED"
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
                         className="w-full pl-10 pr-4 py-3 rounded-xl text-white text-sm font-medium placeholder:text-slate-600 focus:outline-none transition-all"
@@ -199,7 +199,7 @@ export default function AdminPortalLayout({
                         type={showPassword ? 'text' : 'password'}
                         required
                         autoComplete="current-password"
-                        placeholder="Enter master password"
+                        placeholder="Enter master password (2026)"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         className="w-full pl-10 pr-11 py-3 rounded-xl text-white text-sm font-medium placeholder:text-slate-600 focus:outline-none transition-all"
@@ -247,7 +247,7 @@ export default function AdminPortalLayout({
                 <div className="p-3.5 rounded-2xl flex items-start space-x-3" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
                   <Shield className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
                   <p className="text-slate-400 text-[11px] leading-relaxed">
-                    All console activity is cryptographically logged. Unauthorized access attempts are recorded and reported.
+                    Master Credentials: Username: <strong className="text-amber-300 font-mono">BLESSED</strong> • Password: <strong className="text-amber-300 font-mono">2026</strong>. All console activity is cryptographically logged.
                   </p>
                 </div>
               </div>
