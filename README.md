@@ -159,3 +159,4 @@ npm run start
 - **Location:** Plot 42, Off Anaji-Mpatado Highway, P.O. Box AX 1420, Takoradi, Western Region, Ghana
 - **Curriculum:** Ghana Basic Education Curriculum (NaCCA / GES Standards-Based Curriculum)
 - **Levels:** Creche, Nursery 1 & 2, Kindergarten 1 & 2, Primary 1–6 (Basic 1–6), Junior High School 1–3 (JHS 1–3 / Basic 7–9)
+# BLESSED-CHILD-  
