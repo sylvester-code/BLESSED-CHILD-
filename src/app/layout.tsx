@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { SchoolProvider } from '@/context/SchoolContext';
+import { SessionSecurityManager } from '@/components/common/SessionSecurityManager';
 
 export const metadata: Metadata = {
   title: 'Blessed Child School Complex | Anaji-Mpatado, Ghana',
@@ -59,6 +60,7 @@ export default function RootLayout({
 
         <div className="relative z-10 flex flex-col min-h-screen">
           <SchoolProvider>
+            <SessionSecurityManager />
             {children}
           </SchoolProvider>
         </div>

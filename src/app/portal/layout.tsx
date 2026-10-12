@@ -1,24 +1,68 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSchool } from '@/context/SchoolContext';
 import { PortalSidebar } from '@/components/layout/PortalSidebar';
 import { PortalHeader } from '@/components/layout/PortalHeader';
-import { Menu, X } from 'lucide-react';
+import { SchoolLogo } from '@/components/common/SchoolLogo';
+import { Menu, X, ArrowRight, Lock } from 'lucide-react';
 
 export default function PortalLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { settings } = useSchool();
+  const { settings, isPortalAuthenticated } = useSchool();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // The portal root (/portal) is the login page — render it WITHOUT the sidebar/header shell
   if (pathname === '/portal') {
     return <>{children}</>;
+  }
+
+  // Prevent flash during mount
+  if (!mounted) {
+    return null;
+  }
+
+  // Auth Guard: If user is not authenticated or left the system, require login
+  if (!isPortalAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4 relative" style={{ background: 'linear-gradient(135deg, #020817 0%, #051329 40%, #0a1f4e 70%, #040e21 100%)' }}>
+        <div className="max-w-md w-full bg-slate-900/90 border border-white/10 p-8 rounded-3xl text-center space-y-5 shadow-2xl backdrop-blur-xl">
+          <div className="flex justify-center">
+            <SchoolLogo size="lg" className="shadow-2xl border-2 border-amber-400/40" />
+          </div>
+          <div>
+            <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300 text-[10px] font-extrabold uppercase tracking-widest mb-3">
+              <Lock className="w-3 h-3 text-amber-400" />
+              <span>Authentication Required</span>
+            </div>
+            <h2 className="text-2xl font-black text-white">Staff Session Expired</h2>
+            <p className="text-xs text-slate-300 mt-2 leading-relaxed">
+              When you leave the system, your session is automatically locked for security. Please re-enter your username and password.
+            </p>
+          </div>
+          <div className="pt-2">
+            <Link
+              href="/portal"
+              className="w-full py-3.5 px-6 rounded-xl font-bold text-xs uppercase tracking-wider shadow-lg flex items-center justify-center space-x-2 bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 hover:from-amber-300 hover:to-amber-400 transition-all"
+            >
+              <span>Unlock Staff Portal</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (

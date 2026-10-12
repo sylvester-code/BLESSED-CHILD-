@@ -71,6 +71,8 @@ interface SchoolContextType {
   deleteUser: (id: string) => void;
   updateUserRole: (id: string, newRole: UserRole) => void;
   loginPortalUser: (usernameOrEmail: string, passwordInput: string) => { success: boolean; user?: User; redirectUrl?: string; error?: string };
+  isPortalAuthenticated: boolean;
+  logoutPortalUser: () => void;
 
   // Super Admin Credentials & Session
   adminCreds: { username: string; password: string };
@@ -384,7 +386,28 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   });
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('blessed_admin_session') === 'true';
+      try {
+        // Purge legacy permanent localStorage session
+        localStorage.removeItem('blessed_admin_session');
+        return sessionStorage.getItem('blessed_admin_session') === 'true';
+      } catch {
+        return false;
+      }
+    }
+    return false;
+  });
+
+  const [isPortalAuthenticated, setIsPortalAuthenticated] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        // Purge legacy permanent localStorage session
+        localStorage.removeItem('blessed_portal_session');
+        localStorage.removeItem('blessed_active_teacher');
+        localStorage.removeItem('blessed_user');
+        return sessionStorage.getItem('blessed_portal_session') === 'true';
+      } catch {
+        return false;
+      }
     }
     return false;
   });
@@ -532,8 +555,48 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         }
       }
 
-      const storedAdminSession = localStorage.getItem('blessed_admin_session');
-      if (storedAdminSession === 'true') setIsAdminAuthenticated(true);
+      // Purge legacy permanent localStorage auth tokens
+      localStorage.removeItem('blessed_admin_session');
+      localStorage.removeItem('blessed_portal_session');
+      localStorage.removeItem('blessed_user');
+      localStorage.removeItem('blessed_active_teacher');
+
+      // Admin session strictly from temporary sessionStorage
+      const sessionAdmin = sessionStorage.getItem('blessed_admin_session');
+      if (sessionAdmin === 'true') {
+        setIsAdminAuthenticated(true);
+      } else {
+        setIsAdminAuthenticated(false);
+      }
+
+      // Portal session strictly from temporary sessionStorage
+      const sessionPortal = sessionStorage.getItem('blessed_portal_session');
+      if (sessionPortal === 'true') {
+        setIsPortalAuthenticated(true);
+        const storedPortalUser = sessionStorage.getItem('blessed_portal_user');
+        if (storedPortalUser) {
+          try {
+            setCurrentUser(JSON.parse(storedPortalUser));
+          } catch {
+            // ignore
+          }
+        }
+        const storedActiveTeacher = sessionStorage.getItem('blessed_active_teacher');
+        if (storedActiveTeacher) {
+          try {
+            const parsedActive = JSON.parse(storedActiveTeacher);
+            if (!localDeletedSet.has(parsedActive.id)) {
+              setActiveTeacher(parsedActive);
+            }
+          } catch {
+            // ignore
+          }
+        }
+      } else {
+        setIsPortalAuthenticated(false);
+        setActiveTeacher(null);
+        setCurrentUser(initialUsers[0]);
+      }
 
       const storedSettings = localStorage.getItem('blessed_settings');
       if (storedSettings) setSettings(JSON.parse(storedSettings));
@@ -561,25 +624,9 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         setUsers(filterAuthorizedUsers(parsedUsers, loadedTeachers));
       }
 
-      const storedUser = localStorage.getItem('blessed_user');
-      if (storedUser) {
-        const parsedU = JSON.parse(storedUser);
-        if (parsedU.role !== 'TEACHER' && parsedU.role !== 'STUDENT') {
-          setCurrentUser(parsedU);
-        }
-      }
-
       const storedPrefects = localStorage.getItem('blessed_prefects');
       if (storedPrefects) {
         setPrefects(JSON.parse(storedPrefects).filter((p: SchoolPrefect) => !localDeletedSet.has(p.id)));
-      }
-
-      const storedActiveTeacher = localStorage.getItem('blessed_active_teacher');
-      if (storedActiveTeacher) {
-        const parsedActive = JSON.parse(storedActiveTeacher);
-        if (!localDeletedSet.has(parsedActive.id)) {
-          setActiveTeacher(parsedActive);
-        }
       }
 
       const storedAdmissions = localStorage.getItem('blessed_admissions');
@@ -743,13 +790,12 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       localStorage.setItem('blessed_quizzes', JSON.stringify(quizzes));
       localStorage.setItem('blessed_homework', JSON.stringify(homework));
       localStorage.setItem('blessed_learning_materials', JSON.stringify(learningMaterials));
-      localStorage.setItem('blessed_user', JSON.stringify(currentUser));
       localStorage.setItem('blessed_admin_creds', JSON.stringify(adminCreds));
-      if (activeTeacher) {
-        localStorage.setItem('blessed_active_teacher', JSON.stringify(activeTeacher));
-      } else {
-        localStorage.removeItem('blessed_active_teacher');
-      }
+      // Purge legacy permanent localStorage auth tokens so sessions are strictly temporary
+      localStorage.removeItem('blessed_user');
+      localStorage.removeItem('blessed_active_teacher');
+      localStorage.removeItem('blessed_admin_session');
+      localStorage.removeItem('blessed_portal_session');
 
       // Automatically sync live to server
       syncServer({
@@ -959,8 +1005,14 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     if (isMasterAdmin) {
       setIsAdminAuthenticated(true);
+      setIsPortalAuthenticated(true);
       if (typeof window !== 'undefined') {
-        localStorage.setItem('blessed_admin_session', 'true');
+        try {
+          sessionStorage.setItem('blessed_admin_session', 'true');
+          sessionStorage.setItem('blessed_portal_session', 'true');
+          localStorage.removeItem('blessed_admin_session');
+          localStorage.removeItem('blessed_portal_session');
+        } catch {}
       }
       const adminUser = users.find(u => u.role === 'SUPER_ADMIN') || initialUsers[0];
       setCurrentUser(adminUser);
@@ -985,6 +1037,13 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       }
 
       setCurrentUser(matchedUser);
+      setIsPortalAuthenticated(true);
+      if (typeof window !== 'undefined') {
+        try {
+          sessionStorage.setItem('blessed_portal_session', 'true');
+          sessionStorage.setItem('blessed_portal_user', JSON.stringify(matchedUser));
+        } catch {}
+      }
 
       // If linked to a teacher, activate teacher context
       if (matchedUser.role === 'TEACHER' || matchedUser.linkedTeacherId) {
@@ -995,6 +1054,11 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         );
         if (matchedTeacher) {
           setActiveTeacher(matchedTeacher);
+          if (typeof window !== 'undefined') {
+            try {
+              sessionStorage.setItem('blessed_active_teacher', JSON.stringify(matchedTeacher));
+            } catch {}
+          }
         }
       }
 
@@ -1016,7 +1080,10 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       ) {
         setIsAdminAuthenticated(true);
         if (typeof window !== 'undefined') {
-          localStorage.setItem('blessed_admin_session', 'true');
+          try {
+            sessionStorage.setItem('blessed_admin_session', 'true');
+            localStorage.removeItem('blessed_admin_session');
+          } catch {}
         }
         redirectUrl = '/admin-portal';
       }
@@ -1037,6 +1104,7 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         return { success: false, error: 'Incorrect password for this teacher account.' };
       }
       setActiveTeacher(matchedTeacher);
+      setIsPortalAuthenticated(true);
       const teacherUser: User = {
         id: `usr-tch-${matchedTeacher.id}`,
         name: matchedTeacher.fullName,
@@ -1047,6 +1115,13 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         createdAt: matchedTeacher.employmentDate
       };
       setCurrentUser(teacherUser);
+      if (typeof window !== 'undefined') {
+        try {
+          sessionStorage.setItem('blessed_portal_session', 'true');
+          sessionStorage.setItem('blessed_active_teacher', JSON.stringify(matchedTeacher));
+          sessionStorage.setItem('blessed_portal_user', JSON.stringify(teacherUser));
+        } catch {}
+      }
       logAuditEvent('Users & Roles', `Teacher ${matchedTeacher.fullName} authenticated via Portal Login`);
       return { success: true, user: teacherUser, redirectUrl: '/portal/teacher' };
     }
@@ -1054,8 +1129,13 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     // 3. Super Admin master credentials fallback
     if (trimmed === (adminCreds?.username || 'blessed').toLowerCase() && (cleanPass === '2026' || cleanPass === (adminCreds?.password || '').trim())) {
       setIsAdminAuthenticated(true);
+      setIsPortalAuthenticated(true);
       if (typeof window !== 'undefined') {
-        localStorage.setItem('blessed_admin_session', 'true');
+        try {
+          sessionStorage.setItem('blessed_admin_session', 'true');
+          sessionStorage.setItem('blessed_portal_session', 'true');
+          localStorage.removeItem('blessed_admin_session');
+        } catch {}
       }
       const adminUser = users.find(u => u.role === 'SUPER_ADMIN') || initialUsers[0];
       setCurrentUser(adminUser);
@@ -1082,7 +1162,10 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     if (isMasterMatch || isConfigMatch) {
       setIsAdminAuthenticated(true);
       if (typeof window !== 'undefined') {
-        localStorage.setItem('blessed_admin_session', 'true');
+        try {
+          sessionStorage.setItem('blessed_admin_session', 'true');
+          localStorage.removeItem('blessed_admin_session');
+        } catch {}
       }
       const adminUser = users.find(u => u.role === 'SUPER_ADMIN') || initialUsers[0];
       setCurrentUser(adminUser);
@@ -1098,9 +1181,29 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const logoutAdmin = () => {
     setIsAdminAuthenticated(false);
     if (typeof window !== 'undefined') {
-      localStorage.removeItem('blessed_admin_session');
+      try {
+        sessionStorage.removeItem('blessed_admin_session');
+        localStorage.removeItem('blessed_admin_session');
+      } catch {}
     }
     logAuditEvent('Settings', 'Super Administrator logged out of control console');
+  };
+
+  const logoutPortalUser = () => {
+    setIsPortalAuthenticated(false);
+    setActiveTeacher(null);
+    setCurrentUser(initialUsers[0]);
+    if (typeof window !== 'undefined') {
+      try {
+        sessionStorage.removeItem('blessed_portal_session');
+        sessionStorage.removeItem('blessed_portal_user');
+        sessionStorage.removeItem('blessed_active_teacher');
+        localStorage.removeItem('blessed_portal_session');
+        localStorage.removeItem('blessed_user');
+        localStorage.removeItem('blessed_active_teacher');
+      } catch {}
+    }
+    logAuditEvent('Users & Roles', 'User logged out of Portal session');
   };
 
   const changeAdminPassword = (currentPassword: string, newPassword: string): { success: boolean; error?: string } => {
@@ -1321,8 +1424,15 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         createdAt: matched.employmentDate
       };
       setCurrentUser(teacherUser);
+      setIsPortalAuthenticated(true);
       if (typeof window !== 'undefined') {
-        localStorage.setItem('blessed_active_teacher', JSON.stringify(matched));
+        try {
+          sessionStorage.setItem('blessed_portal_session', 'true');
+          sessionStorage.setItem('blessed_active_teacher', JSON.stringify(matched));
+          sessionStorage.setItem('blessed_portal_user', JSON.stringify(teacherUser));
+          localStorage.removeItem('blessed_active_teacher');
+          localStorage.removeItem('blessed_user');
+        } catch {}
       }
       logAuditEvent('Assessments', `Teacher ${matched.fullName} logged into Teacher Portal`);
       return { success: true, teacher: matched };
@@ -1335,12 +1445,8 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const logoutTeacher = () => {
-    setActiveTeacher(null);
-    setCurrentUser(initialUsers[0]);
+    logoutPortalUser();
     if (typeof window !== 'undefined') {
-      localStorage.removeItem('blessed_active_teacher');
-      localStorage.removeItem('blessed_user');
-      // Redirect to portal login
       window.location.href = '/portal';
     }
   };
@@ -2028,6 +2134,8 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         deleteUser,
         updateUserRole,
         loginPortalUser,
+        isPortalAuthenticated,
+        logoutPortalUser,
         adminCreds,
         isAdminAuthenticated,
         loginAdmin,

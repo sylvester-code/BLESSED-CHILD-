@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 
 export const PortalHeader = () => {
-  const { currentUser, switchRole, settings, announcements, resetToDemo } = useSchool();
+  const { currentUser, switchRole, settings, announcements, resetToDemo, logoutPortalUser } = useSchool();
   const [roleDropdownOpen, setRoleDropdownOpen] = useState(false);
   const [notifDropdownOpen, setNotifDropdownOpen] = useState(false);
 
@@ -159,6 +159,15 @@ export const PortalHeader = () => {
             <span className="text-[10px] text-slate-500">{currentUser.role.replace('_', ' ')}</span>
           </div>
         </div>
+
+        <button
+          onClick={logoutPortalUser}
+          title="Sign out of portal"
+          className="flex items-center space-x-1.5 text-xs font-semibold text-slate-600 hover:text-rose-600 px-2.5 py-1.5 rounded-lg hover:bg-rose-50 transition-colors ml-1"
+        >
+          <LogOut className="w-3.5 h-3.5 text-rose-500" />
+          <span className="hidden sm:inline">Logout</span>
+        </button>
 
       </div>
     </header>
