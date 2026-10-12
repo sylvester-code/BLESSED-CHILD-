@@ -36,7 +36,7 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="min-h-screen flex flex-col bg-transparent">
       <Navbar />
 
       <main className="flex-1">
@@ -56,7 +56,7 @@ export default function ContactPage() {
         </section>
 
         {/* Contact Information & Form Grid */}
-        <section className="py-16 bg-slate-50">
+        <section className="py-20 bg-transparent relative">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
               
@@ -75,7 +75,7 @@ export default function ContactPage() {
                 </div>
 
                 <div className="space-y-4">
-                  <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-start space-x-4">
+                  <div className="p-5 rounded-2xl bg-blended-card hover-lift flex items-start space-x-4">
                     <div className="w-10 h-10 rounded-xl bg-school-navy-50 text-school-navy-900 flex items-center justify-center flex-shrink-0">
                       <MapPin className="w-5 h-5 text-amber-600" />
                     </div>
@@ -86,7 +86,7 @@ export default function ContactPage() {
                     </div>
                   </div>
 
-                  <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-start space-x-4">
+                  <div className="p-5 rounded-2xl bg-blended-card hover-lift flex items-start space-x-4">
                     <div className="w-10 h-10 rounded-xl bg-school-navy-50 text-school-navy-900 flex items-center justify-center flex-shrink-0">
                       <Phone className="w-5 h-5 text-amber-600" />
                     </div>
@@ -98,7 +98,7 @@ export default function ContactPage() {
                     </div>
                   </div>
 
-                  <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-start space-x-4">
+                  <div className="p-5 rounded-2xl bg-blended-card hover-lift flex items-start space-x-4">
                     <div className="w-10 h-10 rounded-xl bg-school-navy-50 text-school-navy-900 flex items-center justify-center flex-shrink-0">
                       <Mail className="w-5 h-5 text-amber-600" />
                     </div>
@@ -109,7 +109,7 @@ export default function ContactPage() {
                     </div>
                   </div>
 
-                  <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-start space-x-4">
+                  <div className="p-5 rounded-2xl bg-blended-card hover-lift flex items-start space-x-4">
                     <div className="w-10 h-10 rounded-xl bg-school-navy-50 text-school-navy-900 flex items-center justify-center flex-shrink-0">
                       <Clock className="w-5 h-5 text-amber-600" />
                     </div>
@@ -125,7 +125,7 @@ export default function ContactPage() {
 
               {/* Right Column: Interactive Inquiry Form */}
               <div className="lg:col-span-7">
-                <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-sm">
+                <div className="bg-blended-card rounded-2xl p-6 sm:p-8">
                   <div className="mb-6">
                     <span className="text-xs font-bold text-amber-700 bg-amber-100 px-3 py-1 rounded-full uppercase">
                       Direct Message

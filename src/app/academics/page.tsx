@@ -82,7 +82,7 @@ export default function AcademicsPage() {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="min-h-screen flex flex-col bg-transparent">
       <Navbar />
 
       <main className="flex-1">
@@ -102,7 +102,7 @@ export default function AcademicsPage() {
         </section>
 
         {/* Academic Levels */}
-        <section className="py-16 bg-slate-50">
+        <section className="py-20 bg-blended-section border-y border-slate-200/60 relative">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center max-w-2xl mx-auto mb-12">
               <span className="text-xs font-bold text-school-navy-800 uppercase tracking-wider bg-school-navy-100 px-3 py-1 rounded-md">
@@ -118,7 +118,7 @@ export default function AcademicsPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {/* Early Childhood */}
-              <div className="bg-white rounded-2xl p-7 border border-slate-200 shadow-sm hover:shadow-lg transition-all space-y-4">
+              <div className="bg-blended-card rounded-2xl p-7 hover-lift space-y-4">
                 <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-900 uppercase">
                   Early Years
                 </span>
@@ -172,7 +172,7 @@ export default function AcademicsPage() {
         </section>
 
         {/* Subjects & Departments */}
-        <section className="py-16 bg-white">
+        <section className="py-20 bg-transparent relative">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
               <div>
@@ -231,7 +231,7 @@ export default function AcademicsPage() {
         </section>
 
         {/* Academic Calendar for Year */}
-        <section className="py-16 bg-slate-50">
+        <section className="py-20 bg-blended-section-tint border-y border-slate-200/60 relative">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center max-w-2xl mx-auto mb-12">
               <span className="text-xs font-bold text-school-navy-800 uppercase tracking-wider bg-school-navy-100 px-3 py-1 rounded-md">
@@ -300,7 +300,7 @@ export default function AcademicsPage() {
         </section>
 
         {/* GRADING SYSTEM & ASSESSMENT ENGINE INFO */}
-        <section className="py-16 bg-white">
+        <section className="py-20 bg-transparent relative">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center max-w-2xl mx-auto mb-12">
               <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider bg-emerald-50 px-3 py-1 rounded-md">

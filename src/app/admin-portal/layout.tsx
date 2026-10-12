@@ -305,7 +305,7 @@ export default function AdminPortalLayout({
 
   // Authenticated Super Admin Layout: Fixed static sidebar on left with independent content scrolling
   return (
-    <div className="h-screen bg-slate-100 flex overflow-hidden">
+    <div className="h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-indigo-50/30 flex overflow-hidden">
       {/* Desktop Sidebar: Static Fixed on Left, does NOT scroll with page */}
       <div className="hidden lg:flex lg:flex-col lg:w-64 lg:flex-shrink-0 h-full border-r border-white/10 bg-school-navy-950 z-30">
         <AdminSidebar />

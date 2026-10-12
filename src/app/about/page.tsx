@@ -51,7 +51,7 @@ export default function AboutPage() {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="min-h-screen flex flex-col bg-transparent">
       <Navbar />
 
       <main className="flex-1">
@@ -71,7 +71,7 @@ export default function AboutPage() {
         </section>
 
         {/* History & Story */}
-        <section className="py-16 bg-white">
+        <section className="py-16 bg-transparent relative">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
               <div className="lg:col-span-6 space-y-5">
@@ -112,11 +112,11 @@ export default function AboutPage() {
         </section>
 
         {/* Vision & Mission */}
-        <section className="py-16 bg-slate-50">
+        <section className="py-20 bg-blended-section border-y border-slate-200/60 relative">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* Vision Card */}
-              <div className="p-8 rounded-2xl bg-white border border-slate-200 shadow-sm relative overflow-hidden group hover:border-amber-400 transition-all">
+              <div className="p-8 rounded-3xl bg-blended-card relative overflow-hidden group hover:border-amber-400 transition-all">
                 <div className="w-12 h-12 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center mb-4">
                   <Compass className="w-6 h-6" />
                 </div>
@@ -127,7 +127,7 @@ export default function AboutPage() {
               </div>
 
               {/* Mission Card */}
-              <div className="p-8 rounded-2xl bg-white border border-slate-200 shadow-sm relative overflow-hidden group hover:border-school-navy-400 transition-all">
+              <div className="p-8 rounded-3xl bg-blended-card relative overflow-hidden group hover:border-school-navy-400 transition-all">
                 <div className="w-12 h-12 rounded-xl bg-school-navy-100 text-school-navy-800 flex items-center justify-center mb-4">
                   <Target className="w-6 h-6" />
                 </div>
@@ -141,7 +141,7 @@ export default function AboutPage() {
         </section>
 
         {/* Core Values */}
-        <section className="py-16 bg-white">
+        <section className="py-20 bg-transparent relative">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center max-w-2xl mx-auto mb-12">
               <span className="text-xs font-bold text-amber-700 uppercase tracking-wider bg-amber-50 px-3 py-1 rounded-md">
@@ -159,7 +159,7 @@ export default function AboutPage() {
               {coreValues.map((v, i) => {
                 const Icon = v.icon;
                 return (
-                  <div key={i} className="p-6 rounded-2xl bg-slate-50 border border-slate-200/80 hover:bg-white hover:shadow-lg transition-all text-center">
+                  <div key={i} className="p-6 rounded-2xl bg-blended-card hover-lift text-center">
                     <div className="w-12 h-12 rounded-xl bg-school-navy-900 text-amber-400 flex items-center justify-center mx-auto mb-4">
                       <Icon className="w-6 h-6" />
                     </div>
@@ -173,7 +173,7 @@ export default function AboutPage() {
         </section>
 
         {/* School Leadership */}
-        <section className="py-16 bg-slate-50">
+        <section className="py-20 bg-blended-section-tint border-y border-slate-200/60 relative">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center max-w-2xl mx-auto mb-12">
               <span className="text-xs font-bold text-school-navy-800 uppercase tracking-wider bg-school-navy-100 px-3 py-1 rounded-md">
@@ -190,7 +190,7 @@ export default function AboutPage() {
             {teachers.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {teachers.map((t) => (
-                  <div key={t.id} className="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-md transition-all">
+                  <div key={t.id} className="bg-blended-card rounded-2xl overflow-hidden hover-lift">
                     <div className="h-56 bg-slate-100 relative">
                       <img
                         src={t.photoUrl || "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=300&q=80"}

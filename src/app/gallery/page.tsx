@@ -102,7 +102,7 @@ export default function GalleryPage() {
     : photos.filter(p => p.category === selectedCategory);
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="min-h-screen flex flex-col bg-transparent">
       <Navbar />
 
       <main className="flex-1">
@@ -122,7 +122,7 @@ export default function GalleryPage() {
         </section>
 
         {/* Filter Buttons */}
-        <section className="py-6 bg-slate-50 border-b border-slate-200">
+        <section className="py-6 bg-blended-section border-b border-slate-200/60 relative">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center space-x-2 overflow-x-auto pb-1">
               <Filter className="w-4 h-4 text-slate-500 mr-2 flex-shrink-0" />
@@ -133,7 +133,7 @@ export default function GalleryPage() {
                   className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
                     selectedCategory === cat
                       ? 'bg-school-navy-900 text-white shadow-sm'
-                      : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100'
+                      : 'bg-white/80 border border-slate-200 text-slate-600 hover:bg-white'
                   }`}
                 >
                   {cat}
@@ -144,7 +144,7 @@ export default function GalleryPage() {
         </section>
 
         {/* Gallery Grid */}
-        <section className="py-16 bg-white">
+        <section className="py-16 bg-transparent relative">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
               {filteredPhotos.map((photo) => (

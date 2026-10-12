@@ -131,7 +131,7 @@ export default function AdmissionsPage() {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="min-h-screen flex flex-col bg-transparent">
       <Navbar />
 
       <main className="flex-1">
@@ -151,13 +151,13 @@ export default function AdmissionsPage() {
         </section>
 
         {/* STEP-BY-STEP ADMISSION PROCESS */}
-        <section className="py-12 bg-slate-50 border-b border-slate-200">
+        <section className="py-14 bg-blended-section border-b border-slate-200/60 relative">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h3 className="text-center text-xs font-bold uppercase tracking-widest text-slate-500 mb-8">
               4 Simple Steps to Admission
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm relative">
+              <div className="bg-blended-card p-5 rounded-xl hover-lift relative">
                 <span className="w-8 h-8 rounded-full bg-school-navy-900 text-amber-400 font-bold text-sm flex items-center justify-center mb-3">1</span>
                 <h4 className="font-bold text-slate-900 text-sm">Submit Online Form</h4>
                 <p className="text-slate-600 text-xs mt-1">Complete applicant and parent details below to receive your reference number.</p>
@@ -182,13 +182,13 @@ export default function AdmissionsPage() {
         </section>
 
         {/* APPLICATION FORM & STATUS TRACKER SPLIT */}
-        <section className="py-16 bg-white">
+        <section className="py-16 bg-transparent relative">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
               
               {/* LEFT: ONLINE APPLICATION FORM */}
               <div className="lg:col-span-7">
-                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-sm">
+                <div className="bg-blended-card rounded-2xl p-6 sm:p-8">
                   <div className="mb-6">
                     <span className="text-xs font-bold text-amber-700 bg-amber-100 px-3 py-1 rounded-full uppercase">
                       New Enrollment
@@ -500,7 +500,7 @@ export default function AdmissionsPage() {
                 </div>
 
                 {/* ADMISSIONS FAQS ACCORDION */}
-                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6">
+                <div className="bg-blended-card rounded-2xl p-6">
                   <div className="flex items-center space-x-2 text-school-navy-900 font-bold text-base mb-4">
                     <HelpCircle className="w-5 h-5 text-amber-600" />
                     <span>Frequently Asked Questions</span>

@@ -116,7 +116,7 @@ export default function HomePage() {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="min-h-screen flex flex-col bg-transparent">
       <Navbar />
 
       <main className="flex-1">
@@ -266,7 +266,7 @@ export default function HomePage() {
 
         {/* WELCOME MESSAGE & HEADMASTER SECTION */}
         {settings.showHeadmasterSection !== false && (
-          <section className="py-20 bg-slate-50">
+          <section className="py-20 bg-blended-section border-y border-slate-200/60 relative">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
                 
@@ -343,7 +343,7 @@ export default function HomePage() {
         )}
 
         {/* WHY CHOOSE BLESSED CHILD - 6 PILLARS */}
-        <section className="py-20 bg-white">
+        <section className="py-24 bg-transparent relative">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
               <span className="px-3.5 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-semibold uppercase tracking-wider">
@@ -363,7 +363,7 @@ export default function HomePage() {
                 return (
                   <div
                     key={idx}
-                    className="p-8 rounded-3xl bg-white border border-slate-200/90 hover:border-amber-400/80 shadow-luxury hover-lift transition-all group"
+                    className="p-8 rounded-3xl bg-blended-card hover-lift group"
                   >
                     <div className="w-14 h-14 rounded-2xl bg-school-navy-50 group-hover:bg-amber-400 text-school-navy-900 group-hover:text-slate-950 flex items-center justify-center mb-6 transition-all duration-300 shadow-xs group-hover:scale-110">
                       <IconComponent className="w-7 h-7" />
@@ -445,7 +445,7 @@ export default function HomePage() {
         </section>
 
         {/* LATEST ANNOUNCEMENTS & NEWS */}
-        <section className="py-20 bg-slate-50">
+        <section className="py-24 bg-blended-section-tint border-y border-slate-200/60 relative">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col md:flex-row items-center justify-between mb-12 gap-4">
               <div>
@@ -469,7 +469,7 @@ export default function HomePage() {
               {announcements.slice(0, 3).map((item) => (
                 <div
                   key={item.id}
-                  className="bg-white rounded-2xl p-6 border border-slate-200/80 hover:shadow-lg transition-all flex flex-col justify-between"
+                  className="bg-blended-card rounded-2xl p-6 flex flex-col justify-between"
                 >
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
@@ -504,7 +504,7 @@ export default function HomePage() {
         </section>
 
         {/* TESTIMONIALS */}
-        <section className="py-20 bg-white">
+        <section className="py-24 bg-transparent relative">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center max-w-2xl mx-auto mb-16 space-y-3">
               <span className="px-3.5 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-semibold uppercase tracking-wider">
@@ -522,7 +522,7 @@ export default function HomePage() {
               {testimonials.map((t, idx) => (
                 <div
                   key={idx}
-                  className="p-8 rounded-2xl bg-slate-50 border border-slate-200/80 relative flex flex-col justify-between shadow-sm"
+                  className="p-8 rounded-2xl bg-blended-card relative flex flex-col justify-between"
                 >
                   <Quote className="w-10 h-10 text-amber-400/50 absolute top-6 right-6 pointer-events-none" />
                   

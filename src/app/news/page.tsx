@@ -32,7 +32,7 @@ export default function NewsPage() {
   });
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="min-h-screen flex flex-col bg-transparent">
       <Navbar />
 
       <main className="flex-1">
@@ -52,7 +52,7 @@ export default function NewsPage() {
         </section>
 
         {/* Search & Filter Toolbar */}
-        <section className="py-8 bg-slate-50 border-b border-slate-200">
+        <section className="py-8 bg-blended-section border-b border-slate-200/60 relative">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
               
@@ -77,7 +77,7 @@ export default function NewsPage() {
                     className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                       selectedCategory === cat
                         ? 'bg-school-navy-900 text-white shadow-sm'
-                        : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100'
+                        : 'bg-white/80 border border-slate-200 text-slate-600 hover:bg-white'
                     }`}
                   >
                     {cat}
@@ -90,10 +90,10 @@ export default function NewsPage() {
         </section>
 
         {/* Bulletins List */}
-        <section className="py-16 bg-white">
+        <section className="py-16 bg-transparent relative">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             {filtered.length === 0 ? (
-              <div className="text-center py-16 bg-slate-50 rounded-2xl border border-slate-200 max-w-lg mx-auto">
+              <div className="text-center py-16 bg-blended-card rounded-2xl max-w-lg mx-auto">
                 <Bell className="w-12 h-12 text-slate-400 mx-auto mb-3" />
                 <h3 className="font-bold text-slate-800 text-base">No announcements match your search</h3>
                 <p className="text-xs text-slate-500 mt-1">Try clearing filters or search terms.</p>
@@ -109,10 +109,10 @@ export default function NewsPage() {
                 {filtered.map((item) => (
                   <article
                     key={item.id}
-                    className={`rounded-2xl p-6 border transition-all flex flex-col justify-between hover:shadow-lg ${
+                    className={`rounded-2xl p-6 transition-all flex flex-col justify-between hover-lift ${
                       item.isPinned
-                        ? 'bg-amber-50/40 border-amber-300 shadow-sm'
-                        : 'bg-white border-slate-200'
+                        ? 'bg-amber-50/70 border border-amber-300 shadow-sm backdrop-blur-md'
+                        : 'bg-blended-card'
                     }`}
                   >
                     <div className="space-y-3">

@@ -22,7 +22,7 @@ export default function PortalLayout({
   }
 
   return (
-    <div className="min-h-screen bg-slate-100 flex">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-indigo-50/30 flex">
       {/* Desktop Sidebar */}
       <div className="hidden lg:block">
         <PortalSidebar />
